@@ -33,6 +33,35 @@ public final class TripDetectionEngine: ObservableObject {
                 self.activeDistanceKm = distance
             }
             .store(in: &cancellables)
+
+        locationManager.$currentLocation
+            .receive(on: DispatchQueue.main)
+            .sink { [weak self] location in
+                guard let self = self, self.isTripActive, let loc = location else { return }
+                if self.startCoordinate == nil {
+                    let pt = CoordinatePoint(
+                        latitude: loc.coordinate.latitude,
+                        longitude: loc.coordinate.longitude,
+                        timestamp: Date(),
+                        speed: 0
+                    )
+                    self.startCoordinate = pt
+                    self.resolveStartAddress(point: pt)
+                }
+            }
+            .store(in: &cancellables)
+    }
+
+    private func resolveStartAddress(point: CoordinatePoint) {
+        Task {
+            let address = await geocoding.reverseGeocode(
+                latitude: point.latitude,
+                longitude: point.longitude
+            )
+            DispatchQueue.main.async {
+                self.activeStartAddress = address
+            }
+        }
     }
 
     private func bindBluetoothTriggers() {
@@ -68,6 +97,7 @@ public final class TripDetectionEngine: ObservableObject {
         self.activeStartTime = Date()
         self.activeDistanceKm = 0.0
         self.activeStartAddress = "Locatie ophalen..."
+        self.startCoordinate = nil
         self.isTripActive = true
 
         locationManager.startTripTracking()
@@ -80,16 +110,7 @@ public final class TripDetectionEngine: ObservableObject {
                 speed: 0
             )
             self.startCoordinate = startPoint
-
-            Task {
-                let address = await geocoding.reverseGeocode(
-                    latitude: loc.coordinate.latitude,
-                    longitude: loc.coordinate.longitude
-                )
-                DispatchQueue.main.async {
-                    self.activeStartAddress = address
-                }
-            }
+            resolveStartAddress(point: startPoint)
         }
     }
 
@@ -134,14 +155,19 @@ public final class TripDetectionEngine: ObservableObject {
         storage.addOrUpdateVehicle(updatedVehicle)
 
         let startCoord = self.startCoordinate ?? recordedPoints.first
-        let endCoord = recordedPoints.last
+        let endCoord = recordedPoints.last ?? startCoord
 
-        let startAddr = self.activeStartAddress
+        let currentStartAddr = self.activeStartAddress
 
         Task {
-            var endAddr = "Onbekende bestemming"
-            if let endCoord = endCoord {
-                endAddr = await geocoding.reverseGeocode(latitude: endCoord.latitude, longitude: endCoord.longitude)
+            var finalStartAddr = currentStartAddr
+            if (finalStartAddr.contains("Locatie") || finalStartAddr.contains("Onbekend")), let sc = startCoord {
+                finalStartAddr = await self.geocoding.reverseGeocode(latitude: sc.latitude, longitude: sc.longitude)
+            }
+
+            var finalEndAddr = "Onbekende bestemming"
+            if let ec = endCoord {
+                finalEndAddr = await self.geocoding.reverseGeocode(latitude: ec.latitude, longitude: ec.longitude)
             }
 
             let newTrip = Trip(
@@ -150,8 +176,8 @@ public final class TripDetectionEngine: ObservableObject {
                 vehicleLicensePlate: vehicle.licensePlate,
                 startTime: startTime,
                 endTime: endTime,
-                startAddress: startAddr,
-                endAddress: endAddr,
+                startAddress: finalStartAddr,
+                endAddress: finalEndAddr,
                 startCoordinate: startCoord,
                 endCoordinate: endCoord,
                 distanceInKm: distanceKm,

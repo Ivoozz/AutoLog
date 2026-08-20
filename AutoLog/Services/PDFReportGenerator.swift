@@ -46,7 +46,7 @@ public final class PDFReportGenerator {
             if chunks.isEmpty {
                 // Empty report
                 context.beginPage()
-                drawHeader(
+                _ = drawHeader(
                     in: context.cgContext,
                     pageRect: pageRect,
                     monthTitle: monthTitle,
@@ -109,7 +109,7 @@ public final class PDFReportGenerator {
             .foregroundColor: UIColor.black
         ])
 
-        let driverInfo = "Bestuurder: \(settings.driverName)  |  Conform Belastingdienst Norm" as NSString
+        let driverInfo = "Bestuurder: \(settings.driverName)  |  Conform Richtlijnen Belastingdienst (Inclusief Begin- & Eindadres)" as NSString
         driverInfo.draw(at: CGPoint(x: 40, y: 55), withAttributes: [
             .font: UIFont.systemFont(ofSize: 10),
             .foregroundColor: UIColor.darkGray
@@ -156,17 +156,17 @@ public final class PDFReportGenerator {
 
     private func drawTable(trips: [Trip], startY: CGFloat, in cgContext: CGContext, pageRect: CGRect) -> CGFloat {
         var currentY = startY
-        let rowHeight: CGFloat = 26.0
+        let rowHeight: CGFloat = 28.0
 
-        // Column X positions
+        // Column X positions with generous room for Begin- and Eindadres
         let colDatum: CGFloat = 40
-        let colTijd: CGFloat = 110
-        let colAuto: CGFloat = 175
-        let colVan: CGFloat = 255
+        let colTijd: CGFloat = 105
+        let colAuto: CGFloat = 170
+        let colVan: CGFloat = 240
         let colNaar: CGFloat = 430
-        let colType: CGFloat = 605
+        let colType: CGFloat = 620
         let colKm: CGFloat = 705
-        let colDoel: CGFloat = 755
+        let colDoel: CGFloat = 750
 
         // Header Background
         let headerRect = CGRect(x: 40, y: currentY, width: pageRect.width - 80, height: 20)
@@ -177,8 +177,8 @@ public final class PDFReportGenerator {
             (colDatum, "Datum"),
             (colTijd, "Tijd"),
             (colAuto, "Kenteken"),
-            (colVan, "Vertrekadres"),
-            (colNaar, "Aankomstadres"),
+            (colVan, "Beginadres (Vertrek)"),
+            (colNaar, "Eindadres (Aankomst)"),
             (colType, "Type"),
             (colKm, "KM"),
             (colDoel, "Doel/Omschrijving")
@@ -187,7 +187,7 @@ public final class PDFReportGenerator {
         for (x, hText) in headers {
             let nsText = hText as NSString
             nsText.draw(at: CGPoint(x: x, y: currentY + 4), withAttributes: [
-                .font: UIFont.boldSystemFont(ofSize: 9),
+                .font: UIFont.boldSystemFont(ofSize: 8.5),
                 .foregroundColor: UIColor.black
             ])
         }
@@ -219,26 +219,18 @@ public final class PDFReportGenerator {
             let rowFont = UIFont.systemFont(ofSize: 8)
             let attr: [NSAttributedString.Key: Any] = [.font: rowFont, .foregroundColor: UIColor.black]
 
-            dStr.draw(at: CGPoint(x: colDatum, y: currentY + 6), withAttributes: attr)
-            tStr.draw(at: CGPoint(x: colTijd, y: currentY + 6), withAttributes: attr)
-            autoStr.draw(at: CGPoint(x: colAuto, y: currentY + 6), withAttributes: attr)
-            vanStr.draw(in: CGRect(x: colVan, y: currentY + 6, width: 170, height: 16), withAttributes: attr)
-            naarStr.draw(in: CGRect(x: colNaar, y: currentY + 6, width: 170, height: 16), withAttributes: attr)
-            typeStr.draw(at: CGPoint(x: colType, y: currentY + 6), withAttributes: attr)
-            kmStr.draw(at: CGPoint(x: colKm, y: currentY + 6), withAttributes: [.font: UIFont.boldSystemFont(ofSize: 8), .foregroundColor: UIColor.black])
-            doelStr.draw(in: CGRect(x: colDoel, y: currentY + 6, width: 70, height: 16), withAttributes: attr)
+            dStr.draw(at: CGPoint(x: colDatum, y: currentY + 7), withAttributes: attr)
+            tStr.draw(at: CGPoint(x: colTijd, y: currentY + 7), withAttributes: attr)
+            autoStr.draw(at: CGPoint(x: colAuto, y: currentY + 7), withAttributes: attr)
+            vanStr.draw(in: CGRect(x: colVan, y: currentY + 4, width: 185, height: 20), withAttributes: attr)
+            naarStr.draw(in: CGRect(x: colNaar, y: currentY + 4, width: 185, height: 20), withAttributes: attr)
+            typeStr.draw(at: CGPoint(x: colType, y: currentY + 7), withAttributes: attr)
+            kmStr.draw(at: CGPoint(x: colKm, y: currentY + 7), withAttributes: [.font: UIFont.boldSystemFont(ofSize: 8.5), .foregroundColor: UIColor.black])
+            doelStr.draw(in: CGRect(x: colDoel, y: currentY + 4, width: 85, height: 20), withAttributes: attr)
 
             currentY += rowHeight
         }
 
         return currentY
-    }
-}
-
-extension Array {
-    func chunked(into size: Int) -> [[Element]] {
-        return stride(from: 0, to: count, by: size).map {
-            Array(self[$0 ..< Swift.min($0 + size, count)])
-        }
     }
 }

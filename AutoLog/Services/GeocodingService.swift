@@ -15,26 +15,35 @@ public final class GeocodingService {
                 return String(format: "%.4f, %.4f", latitude, longitude)
             }
 
-            var parts: [String] = []
+            var streetPart = ""
             if let thoroughfare = place.thoroughfare {
                 if let subThoroughfare = place.subThoroughfare {
-                    parts.append("\(thoroughfare) \(subThoroughfare)")
+                    streetPart = "\(thoroughfare) \(subThoroughfare)"
                 } else {
-                    parts.append(thoroughfare)
+                    streetPart = thoroughfare
                 }
+            } else if let name = place.name, name != place.locality {
+                streetPart = name
             }
 
+            var cityPart = ""
             if let locality = place.locality {
-                parts.append(locality)
+                cityPart = locality
             } else if let subLocality = place.subLocality {
-                parts.append(subLocality)
+                cityPart = subLocality
+            } else if let adminArea = place.administrativeArea {
+                cityPart = adminArea
             }
 
-            if parts.isEmpty {
+            if !streetPart.isEmpty && !cityPart.isEmpty {
+                return "\(streetPart), \(cityPart)"
+            } else if !streetPart.isEmpty {
+                return streetPart
+            } else if !cityPart.isEmpty {
+                return cityPart
+            } else {
                 return place.name ?? String(format: "%.4f, %.4f", latitude, longitude)
             }
-
-            return parts.joined(separator: ", ")
         } catch {
             return String(format: "%.4f, %.4f", latitude, longitude)
         }
