@@ -223,7 +223,7 @@ public struct MonthlyReportView: View {
                     recipientEmail: storage.settings.recipientEmail,
                     monthName: monthName,
                     driverName: storage.settings.driverName,
-                    apiKey: storage.settings.resendApiKey
+                    settings: storage.settings
                 )
                 DispatchQueue.main.async {
                     self.isSendingEmail = false

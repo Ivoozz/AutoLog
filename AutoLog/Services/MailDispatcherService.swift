@@ -1,4 +1,5 @@
 import Foundation
+import Network
 
 public final class MailDispatcherService {
     public static let shared = MailDispatcherService()
@@ -10,67 +11,179 @@ public final class MailDispatcherService {
         recipientEmail: String,
         monthName: String,
         driverName: String,
-        apiKey: String
+        settings: UserSettings
     ) async throws {
         guard !recipientEmail.isEmpty else {
-            throw NSError(domain: "MailDispatcher", code: 400, userInfo: [NSLocalizedDescriptionKey: "Geen ontvangend e-mailadres ingesteld."])
+            throw NSError(domain: "MailDispatcher", code: 400, userInfo: [NSLocalizedDescriptionKey: "Geen ontvangend e-mailadres ingesteld in Instellingen."])
         }
 
-        // If Resend API key is provided, send automatically in background
-        if !apiKey.isEmpty {
-            try await sendViaResend(
+        if settings.sendViaGmailSmtp && !settings.gmailAddress.isEmpty && !settings.gmailAppPassword.isEmpty {
+            try await sendViaGmailSmtp(
                 pdfData: pdfData,
                 toEmail: recipientEmail,
                 monthName: monthName,
-                driverName: driverName,
-                apiKey: apiKey
+                driverName: driverName.isEmpty ? "Bestuurder" : driverName,
+                gmailUser: settings.gmailAddress,
+                gmailPassword: settings.gmailAppPassword
             )
         } else {
-            print("Geen Resend API sleutel gevonden. Gebruik lokaal delen of stel API in.")
+            print("Directe Gmail verzending niet geconfigureerd.")
         }
     }
 
-    private func sendViaResend(
+    private func sendViaGmailSmtp(
         pdfData: Data,
         toEmail: String,
         monthName: String,
         driverName: String,
-        apiKey: String
+        gmailUser: String,
+        gmailPassword: String
     ) async throws {
-        let url = URL(string: "https://api.resend.com/emails")!
-        var request = URLRequest(url: url)
-        request.httpMethod = "POST"
-        request.setValue("Bearer \(apiKey)", forHTTPHeaderField: "Authorization")
-        request.setValue("application/json", forHTTPHeaderField: "Content-Type")
+        return try await withCheckedThrowingContinuation { continuation in
+            let host = NWEndpoint.Host("smtp.gmail.com")
+            let port = NWEndpoint.Port(integerLiteral: 465)
 
-        let base64Pdf = pdfData.base64EncodedString()
+            let tlsOptions = NWProtocolTLS.Options()
+            let tcpOptions = NWProtocolTCP.Options()
+            let params = NWParameters(tls: tlsOptions, tcp: tcpOptions)
+
+            let connection = NWConnection(host: host, port: port, using: params)
+            let queue = DispatchQueue(label: "nl.ivoozz.autolog.smtp")
+
+            var hasResponded = false
+            func finish(with error: Error?) {
+                guard !hasResponded else { return }
+                hasResponded = true
+                connection.cancel()
+                if let error = error {
+                    continuation.resume(throwing: error)
+                } else {
+                    continuation.resume(returning: ())
+                }
+            }
+
+            connection.stateUpdateHandler = { state in
+                switch state {
+                case .ready:
+                    self.executeSmtpHandshake(
+                        connection: connection,
+                        toEmail: toEmail,
+                        monthName: monthName,
+                        driverName: driverName,
+                        gmailUser: gmailUser,
+                        gmailPassword: gmailPassword,
+                        pdfData: pdfData,
+                        completion: finish
+                    )
+                case .failed(let err):
+                    finish(with: NSError(domain: "SMTP", code: 500, userInfo: [NSLocalizedDescriptionKey: "Verbinding met Gmail mislukt: \(err.localizedDescription)"]))
+                case .cancelled:
+                    break
+                default:
+                    break
+                }
+            }
+
+            connection.start(queue: queue)
+        }
+    }
+
+    private func executeSmtpHandshake(
+        connection: NWConnection,
+        toEmail: String,
+        monthName: String,
+        driverName: String,
+        gmailUser: String,
+        gmailPassword: String,
+        pdfData: Data,
+        completion: @escaping (Error?) -> Void
+    ) {
+        let cleanPassword = gmailPassword.replacingOccurrences(of: " ", with: "")
+        let userB64 = gmailUser.data(using: .utf8)?.base64EncodedString() ?? ""
+        let passB64 = cleanPassword.data(using: .utf8)?.base64EncodedString() ?? ""
+
+        let boundary = "----=_AutoLog_\(UUID().uuidString)"
+        let pdfB64 = pdfData.base64EncodedString(options: .lineLength64Characters)
         let filename = "Rittenregistratie_\(monthName.replacingOccurrences(of: " ", with: "_")).pdf"
 
-        let body: [String: Any] = [
-            "from": "AutoLog <noreply@resend.dev>",
-            "to": [toEmail],
-            "subject": "📊 Rittenregistratie \(monthName) - \(driverName)",
-            "html": """
-            <h2>Beste \(driverName),</h2>
-            <p>Hierbij ontvang je het automatische rittenoverzicht voor de periode <strong>\(monthName)</strong>.</p>
-            <p>Het bijgevoegde PDF-document is opgesteld conform de richtlijnen van de Belastingdienst.</p>
-            <hr/>
-            <p><small>Automatisch gegenereerd door AutoLog.</small></p>
-            """,
-            "attachments": [
-                [
-                    "filename": filename,
-                    "content": base64Pdf
-                ]
-            ]
+        var messageData = ""
+        messageData += "From: AutoLog <\(gmailUser)>\r\n"
+        messageData += "To: <\(toEmail)>\r\n"
+        messageData += "Subject: Rittenregistratie \(monthName) - \(driverName)\r\n"
+        messageData += "MIME-Version: 1.0\r\n"
+        messageData += "Content-Type: multipart/mixed; boundary=\"\(boundary)\"\r\n\r\n"
+
+        // Body
+        messageData += "--\(boundary)\r\n"
+        messageData += "Content-Type: text/plain; charset=UTF-8\r\n\r\n"
+        messageData += "Beste \(driverName),\r\n\r\n"
+        messageData += "Hierbij ontvang je het automatische rittenoverzicht voor de periode \(monthName).\r\n"
+        messageData += "Het bijgevoegde PDF-document is opgesteld conform de richtlijnen van de Belastingdienst.\r\n\r\n"
+        messageData += "Met vriendelijke groet,\r\nAutoLog\r\n\r\n"
+
+        // Attachment
+        messageData += "--\(boundary)\r\n"
+        messageData += "Content-Type: application/pdf; name=\"\(filename)\"\r\n"
+        messageData += "Content-Disposition: attachment; filename=\"\(filename)\"\r\n"
+        messageData += "Content-Transfer-Encoding: base64\r\n\r\n"
+        messageData += "\(pdfB64)\r\n\r\n"
+        messageData += "--\(boundary)--\r\n"
+
+        let steps: [String] = [
+            "EHLO localhost\r\n",
+            "AUTH LOGIN\r\n",
+            "\(userB64)\r\n",
+            "\(passB64)\r\n",
+            "MAIL FROM: <\(gmailUser)>\r\n",
+            "RCPT TO: <\(toEmail)>\r\n",
+            "DATA\r\n",
+            "\(messageData)\r\n.\r\n",
+            "QUIT\r\n"
         ]
 
-        request.httpBody = try JSONSerialization.data(withJSONObject: body)
+        var currentStep = 0
 
-        let (data, response) = try await URLSession.shared.data(for: request)
-        guard let httpResponse = response as? HTTPURLResponse, (200...299).contains(httpResponse.statusCode) else {
-            let errorText = String(data: data, encoding: .utf8) ?? "Onbekende fout"
-            throw NSError(domain: "MailDispatcher", code: 500, userInfo: [NSLocalizedDescriptionKey: "Verzenden mislukt: \(errorText)"])
+        func sendNext() {
+            if currentStep >= steps.count {
+                completion(nil)
+                return
+            }
+
+            let cmd = steps[currentStep]
+            currentStep += 1
+
+            let data = cmd.data(using: .utf8)!
+            connection.send(content: data, completion: .contentProcessed { error in
+                if let error = error {
+                    completion(error)
+                    return
+                }
+
+                // Read server response
+                connection.receive(minimumIncompleteLength: 1, maximumLength: 1024) { responseData, _, _, recError in
+                    if let recError = recError {
+                        completion(recError)
+                        return
+                    }
+                    if let resp = responseData, let text = String(data: resp, encoding: .utf8) {
+                        let statusCode = text.prefix(3)
+                        if statusCode.starts(with: "4") || statusCode.starts(with: "5") {
+                            completion(NSError(domain: "GmailSMTP", code: 500, userInfo: [NSLocalizedDescriptionKey: "Gmail SMTP fout: \(text.trimmingCharacters(in: .whitespacesAndNewlines))"]))
+                            return
+                        }
+                    }
+                    sendNext()
+                }
+            })
+        }
+
+        // Read initial 220 banner first
+        connection.receive(minimumIncompleteLength: 1, maximumLength: 1024) { _, _, _, error in
+            if let error = error {
+                completion(error)
+            } else {
+                sendNext()
+            }
         }
     }
 }

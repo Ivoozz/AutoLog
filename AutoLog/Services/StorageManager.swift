@@ -16,12 +16,6 @@ public final class StorageManager: ObservableObject {
 
     private init() {
         loadData()
-        if vehicles.isEmpty {
-            seedInitialVehicles()
-        }
-        if savedLocations.isEmpty {
-            seedInitialLocations()
-        }
     }
 
     public func loadData() {
@@ -117,48 +111,6 @@ public final class StorageManager: ObservableObject {
 
     public func deleteLocation(id: UUID) {
         savedLocations.removeAll(where: { $0.id == id })
-        saveLocations()
-    }
-
-    private func seedInitialVehicles() {
-        let workCar = Vehicle(
-            name: "Werkauto (CarPlay / BT)",
-            licensePlate: "V-123-ZZ",
-            isWorkVehicle: true,
-            bluetoothName: "CarPlay",
-            defaultTripType: .workBusiness,
-            currentOdometer: 45200.0
-        )
-        let privateCar = Vehicle(
-            name: "Privéauto",
-            licensePlate: "N-456-AA",
-            isWorkVehicle: false,
-            bluetoothName: "Privé Bluetooth",
-            defaultTripType: .privatePrivate,
-            currentOdometer: 112000.0
-        )
-        vehicles = [workCar, privateCar]
-        saveVehicles()
-    }
-
-    private func seedInitialLocations() {
-        let home = SavedLocation(
-            name: "Thuis",
-            address: "",
-            latitude: 0.0,
-            longitude: 0.0,
-            radiusMeters: 250.0,
-            category: .home
-        )
-        let work = SavedLocation(
-            name: "Kantoor / Werk",
-            address: "",
-            latitude: 0.0,
-            longitude: 0.0,
-            radiusMeters: 250.0,
-            category: .work
-        )
-        savedLocations = [home, work]
         saveLocations()
     }
 }

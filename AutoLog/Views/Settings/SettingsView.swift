@@ -8,7 +8,9 @@ public struct SettingsView: View {
     @State private var recipientEmail: String = ""
     @State private var driverName: String = ""
     @State private var autoExportMonthly: Bool = true
-    @State private var resendApiKey: String = ""
+    @State private var gmailAddress: String = ""
+    @State private var gmailAppPassword: String = ""
+    @State private var sendViaGmailSmtp: Bool = false
     @State private var autoStartOnCarPlay: Bool = true
     @State private var autoStartOnBluetooth: Bool = true
     @State private var minimumTripDistanceMeters: Double = 150.0
@@ -32,12 +34,12 @@ public struct SettingsView: View {
                             .fontWeight(.bold)
                             .foregroundColor(.blue)
 
-                        TextField("Bijv. Dorpsstraat 1, 1000AA Amsterdam", text: $homeAddress)
+                        TextField("Bijv. Kerkstraat 1, 1000AA Amsterdam", text: $homeAddress)
                             .textFieldStyle(.roundedBorder)
 
                         HStack {
                             Button(action: useCurrentLocationForHome) {
-                                Label("Huidige GPS opslaan", systemImage: "location.fill")
+                                Label("GPS Opslaan", systemImage: "location.fill")
                                     .font(.caption)
                             }
                             .buttonStyle(.bordered)
@@ -48,7 +50,7 @@ public struct SettingsView: View {
                                 if isGeocodingHome {
                                     ProgressView().scaleEffect(0.8)
                                 } else {
-                                    Text("Valideer Adres")
+                                    Text("Valideer")
                                         .font(.caption)
                                         .fontWeight(.semibold)
                                 }
@@ -57,7 +59,7 @@ public struct SettingsView: View {
                         }
 
                         if homeGeocodedSuccess {
-                            Text("✅ Woonlocatie succesvol gekoppeld aan GPS")
+                            Text("✅ Woonlocatie gekoppeld aan GPS")
                                 .font(.caption2)
                                 .foregroundColor(.green)
                         }
@@ -75,7 +77,7 @@ public struct SettingsView: View {
 
                         HStack {
                             Button(action: useCurrentLocationForWork) {
-                                Label("Huidige GPS opslaan", systemImage: "location.fill")
+                                Label("GPS Opslaan", systemImage: "location.fill")
                                     .font(.caption)
                             }
                             .buttonStyle(.bordered)
@@ -86,7 +88,7 @@ public struct SettingsView: View {
                                 if isGeocodingWork {
                                     ProgressView().scaleEffect(0.8)
                                 } else {
-                                    Text("Valideer Adres")
+                                    Text("Valideer")
                                         .font(.caption)
                                         .fontWeight(.semibold)
                                 }
@@ -95,7 +97,7 @@ public struct SettingsView: View {
                         }
 
                         if workGeocodedSuccess {
-                            Text("✅ Werklocatie succesvol gekoppeld aan GPS")
+                            Text("✅ Werklocatie gekoppeld aan GPS")
                                 .font(.caption2)
                                 .foregroundColor(.green)
                         }
@@ -109,7 +111,7 @@ public struct SettingsView: View {
 
                 Section("Bestuurder & E-mail Rapportage") {
                     TextField("Naam Bestuurder", text: $driverName)
-                    TextField("E-mailadres voor PDF Export", text: $recipientEmail)
+                    TextField("Ontvangend e-mailadres voor PDF", text: $recipientEmail)
                         .keyboardType(.emailAddress)
                         .textInputAutocapitalization(.never)
                         .autocorrectionDisabled()
@@ -117,11 +119,23 @@ public struct SettingsView: View {
                     Toggle("Automatisch maandelijks e-mailen", isOn: $autoExportMonthly)
                 }
 
-                Section("Achtergrond E-mail API (Optioneel)") {
-                    SecureField("Resend API Sleutel", text: $resendApiKey)
-                    Text("Met een Resend API-sleutel (resend.com) kan de app op de 1e van de maand volledig stil op de achtergrond de PDF naar je mail sturen zonder dat je de app hoeft te openen.")
-                        .font(.caption)
-                        .foregroundColor(.secondary)
+                Section("Gmail Koppeling (Voor automatische verzending)") {
+                    Toggle("Verzend direct via eigen Gmail", isOn: $sendViaGmailSmtp)
+
+                    if sendViaGmailSmtp {
+                        TextField("Jouw Gmail-adres (bijv. ivo@gmail.com)", text: $gmailAddress)
+                            .keyboardType(.emailAddress)
+                            .textInputAutocapitalization(.never)
+                            .autocorrectionDisabled()
+
+                        SecureField("Google App-wachtwoord (16 tekens)", text: $gmailAppPassword)
+                            .textInputAutocapitalization(.never)
+                            .autocorrectionDisabled()
+
+                        Text("💡 Tip: Maak een veilig App-wachtwoord aan via myaccount.google.com/apppasswords. Zo kan de app op de 1e van de maand stil de PDF naar je mailen.")
+                            .font(.caption2)
+                            .foregroundColor(.secondary)
+                    }
                 }
 
                 Section("Automatische Detectie") {
@@ -155,14 +169,14 @@ public struct SettingsView: View {
                     HStack {
                         Text("Versie")
                         Spacer()
-                        Text("1.2.0 (Build 3)")
+                        Text("1.3.0 (Liquid Glass Edition)")
                             .foregroundColor(.secondary)
                     }
                     HStack {
-                        Text("Status")
+                        Text("Design")
                         Spacer()
-                        Label("Actief", systemImage: "checkmark.circle.fill")
-                            .foregroundColor(.green)
+                        Text("iOS 26+ Liquid Glass")
+                            .foregroundColor(.blue)
                     }
                 }
             }
@@ -171,7 +185,9 @@ public struct SettingsView: View {
             .onChange(of: driverName) { saveSettings() }
             .onChange(of: recipientEmail) { saveSettings() }
             .onChange(of: autoExportMonthly) { saveSettings() }
-            .onChange(of: resendApiKey) { saveSettings() }
+            .onChange(of: gmailAddress) { saveSettings() }
+            .onChange(of: gmailAppPassword) { saveSettings() }
+            .onChange(of: sendViaGmailSmtp) { saveSettings() }
             .onChange(of: autoStartOnCarPlay) { saveSettings() }
             .onChange(of: autoStartOnBluetooth) { saveSettings() }
             .onChange(of: minimumTripDistanceMeters) { saveSettings() }
@@ -184,7 +200,9 @@ public struct SettingsView: View {
         driverName = s.driverName
         recipientEmail = s.recipientEmail
         autoExportMonthly = s.autoExportMonthly
-        resendApiKey = s.resendApiKey
+        gmailAddress = s.gmailAddress
+        gmailAppPassword = s.gmailAppPassword
+        sendViaGmailSmtp = s.sendViaGmailSmtp
         autoStartOnCarPlay = s.autoStartOnCarPlay
         autoStartOnBluetooth = s.autoStartOnBluetooth
         minimumTripDistanceMeters = s.minimumTripDistanceMeters
@@ -205,7 +223,9 @@ public struct SettingsView: View {
             recipientEmail: recipientEmail,
             driverName: driverName,
             autoExportMonthly: autoExportMonthly,
-            resendApiKey: resendApiKey,
+            gmailAddress: gmailAddress,
+            gmailAppPassword: gmailAppPassword,
+            sendViaGmailSmtp: sendViaGmailSmtp,
             autoStartOnCarPlay: autoStartOnCarPlay,
             autoStartOnBluetooth: autoStartOnBluetooth,
             minimumTripDistanceMeters: minimumTripDistanceMeters,

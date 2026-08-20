@@ -4,7 +4,9 @@ public struct UserSettings: Codable, Equatable {
     public var recipientEmail: String
     public var driverName: String
     public var autoExportMonthly: Bool
-    public var resendApiKey: String
+    public var gmailAddress: String
+    public var gmailAppPassword: String
+    public var sendViaGmailSmtp: Bool
     public var autoStartOnCarPlay: Bool
     public var autoStartOnBluetooth: Bool
     public var minimumTripDistanceMeters: Double
@@ -12,9 +14,11 @@ public struct UserSettings: Codable, Equatable {
 
     public init(
         recipientEmail: String = "",
-        driverName: String = "Ivo",
+        driverName: String = "",
         autoExportMonthly: Bool = true,
-        resendApiKey: String = "",
+        gmailAddress: String = "",
+        gmailAppPassword: String = "",
+        sendViaGmailSmtp: Bool = false,
         autoStartOnCarPlay: Bool = true,
         autoStartOnBluetooth: Bool = true,
         minimumTripDistanceMeters: Double = 150.0,
@@ -23,7 +27,9 @@ public struct UserSettings: Codable, Equatable {
         self.recipientEmail = recipientEmail
         self.driverName = driverName
         self.autoExportMonthly = autoExportMonthly
-        self.resendApiKey = resendApiKey
+        self.gmailAddress = gmailAddress
+        self.gmailAppPassword = gmailAppPassword
+        self.sendViaGmailSmtp = sendViaGmailSmtp
         self.autoStartOnCarPlay = autoStartOnCarPlay
         self.autoStartOnBluetooth = autoStartOnBluetooth
         self.minimumTripDistanceMeters = minimumTripDistanceMeters

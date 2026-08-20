@@ -6,7 +6,6 @@ public struct DashboardView: View {
     @ObservedObject var bluetooth = BluetoothManager.shared
 
     @State private var selectedVehicle: Vehicle?
-    @State private var showingManualStartSheet = false
 
     public init() {}
 
@@ -39,28 +38,31 @@ public struct DashboardView: View {
 
     public var body: some View {
         NavigationStack {
-            ScrollView {
-                VStack(spacing: 20) {
-                    // 1. Active Trip or Standby Status
-                    if engine.isTripActive {
-                        ActiveTripCardView()
-                    } else {
-                        standbyCard
+            ZStack {
+                LiquidBackground()
+
+                ScrollView {
+                    VStack(spacing: 20) {
+                        // 1. Active Trip or Standby Status
+                        if engine.isTripActive {
+                            ActiveTripCardView()
+                        } else {
+                            standbyCard
+                        }
+
+                        // 2. Private Km Limit Alert / Status (500 km regel)
+                        privateTaxLimitCard
+
+                        // 3. Monthly Overview Card
+                        monthlyOverviewCard
+
+                        // 4. Recent Trips Header & List
+                        recentTripsSection
                     }
-
-                    // 2. Private Km Limit Alert / Status (500 km regel)
-                    privateTaxLimitCard
-
-                    // 3. Monthly Overview Card
-                    monthlyOverviewCard
-
-                    // 4. Recent Trips Header & List
-                    recentTripsSection
+                    .padding()
                 }
-                .padding()
             }
-            .navigationTitle("AutoLog Dashboard")
-            .background(Color(UIColor.systemGroupedBackground))
+            .navigationTitle("AutoLog")
             .onAppear {
                 if selectedVehicle == nil {
                     selectedVehicle = storage.vehicles.first
@@ -70,7 +72,7 @@ public struct DashboardView: View {
     }
 
     private var standbyCard: some View {
-        VStack(alignment: .leading, spacing: 14) {
+        VStack(alignment: .leading, spacing: 16) {
             HStack {
                 Label {
                     Text(bluetooth.isCarPlayConnected ? "CarPlay Verbonden" : (bluetooth.connectedDeviceName ?? "Stand-by"))
@@ -78,74 +80,108 @@ public struct DashboardView: View {
                         .fontWeight(.bold)
                 } icon: {
                     Image(systemName: bluetooth.isCarPlayConnected ? "car.badge.gearshape.fill" : "antenna.radiowaves.left.and.right")
-                        .foregroundColor(bluetooth.isCarPlayConnected ? .green : .blue)
+                        .foregroundColor(bluetooth.isCarPlayConnected ? .green : .cyan)
+                        .shadow(color: (bluetooth.isCarPlayConnected ? Color.green : Color.cyan).opacity(0.6), radius: 6)
                 }
 
                 Spacer()
 
                 Text("Automatisch")
                     .font(.caption2)
-                    .fontWeight(.bold)
-                    .padding(.horizontal, 6)
-                    .padding(.vertical, 2)
-                    .background(Color.blue.opacity(0.12))
-                    .foregroundColor(.blue)
-                    .cornerRadius(4)
+                    .fontWeight(.black)
+                    .padding(.horizontal, 8)
+                    .padding(.vertical, 3)
+                    .background(.ultraThinMaterial)
+                    .clipShape(Capsule())
+                    .overlay(Capsule().stroke(Color.white.opacity(0.3), lineWidth: 1))
             }
 
-            Text("Ritten worden automatisch gestart zodra je CarPlay of de Bluetooth-verbinding van je auto activeert.")
-                .font(.footnote)
-                .foregroundColor(.secondary)
+            if storage.vehicles.isEmpty {
+                VStack(alignment: .leading, spacing: 8) {
+                    Text("Nog geen voertuig toegevoegd")
+                        .font(.headline)
+                        .fontWeight(.bold)
+                    Text("Ga naar het tabblad 'Voertuigen' om je werk- of privéauto in te stellen voor automatische herkenning.")
+                        .font(.footnote)
+                        .foregroundColor(.secondary)
+                }
+            } else {
+                Text("Ritten worden automatisch gestart zodra CarPlay of de Bluetooth-verbinding van je auto actief wordt.")
+                    .font(.footnote)
+                    .foregroundColor(.secondary)
+            }
 
             Divider()
+                .background(Color.white.opacity(0.15))
 
             HStack(spacing: 12) {
-                Menu {
-                    ForEach(storage.vehicles) { vehicle in
-                        Button(action: { selectedVehicle = vehicle }) {
-                            Text("\(vehicle.name) (\(vehicle.licensePlate))")
+                if !storage.vehicles.isEmpty {
+                    Menu {
+                        ForEach(storage.vehicles) { vehicle in
+                            Button(action: { selectedVehicle = vehicle }) {
+                                Text("\(vehicle.name) (\(vehicle.licensePlate))")
+                            }
                         }
+                    } label: {
+                        HStack {
+                            Image(systemName: "car.fill")
+                            Text(selectedVehicle?.name ?? "Kies auto")
+                                .lineLimit(1)
+                            Image(systemName: "chevron.down")
+                                .font(.caption)
+                        }
+                        .font(.subheadline)
+                        .fontWeight(.semibold)
+                        .padding(.vertical, 10)
+                        .padding(.horizontal, 14)
+                        .background(.ultraThinMaterial)
+                        .clipShape(RoundedRectangle(cornerRadius: 12, style: .continuous))
+                        .overlay(RoundedRectangle(cornerRadius: 12).stroke(Color.white.opacity(0.25), lineWidth: 1))
                     }
-                } label: {
-                    HStack {
-                        Image(systemName: "car.fill")
-                        Text(selectedVehicle?.name ?? "Kies auto")
-                            .lineLimit(1)
-                        Image(systemName: "chevron.down")
-                            .font(.caption)
-                    }
-                    .font(.subheadline)
-                    .padding(.vertical, 8)
-                    .padding(.horizontal, 12)
-                    .background(Color(UIColor.tertiarySystemGroupedBackground))
-                    .cornerRadius(8)
-                }
 
-                Button(action: {
-                    if let vehicle = selectedVehicle ?? storage.vehicles.first {
-                        engine.startTrip(with: vehicle)
+                    Button(action: {
+                        if let vehicle = selectedVehicle ?? storage.vehicles.first {
+                            engine.startTrip(with: vehicle)
+                        }
+                    }) {
+                        HStack {
+                            Image(systemName: "play.fill")
+                            Text("Handmatig Starten")
+                                .fontWeight(.bold)
+                        }
+                        .font(.subheadline)
+                        .frame(maxWidth: .infinity)
+                        .padding(.vertical, 10)
+                        .background(
+                            LinearGradient(
+                                colors: [.blue, .cyan],
+                                startPoint: .topLeading,
+                                endPoint: .bottomTrailing
+                            )
+                        )
+                        .foregroundColor(.white)
+                        .clipShape(RoundedRectangle(cornerRadius: 12, style: .continuous))
+                        .shadow(color: Color.blue.opacity(0.35), radius: 8, y: 3)
                     }
-                }) {
-                    HStack {
-                        Image(systemName: "play.fill")
-                        Text("Handmatig Starten")
-                            .fontWeight(.semibold)
+                } else {
+                    NavigationLink(destination: VehicleListView()) {
+                        HStack {
+                            Image(systemName: "plus.circle.fill")
+                            Text("Voeg Eerste Voertuig Toe")
+                                .fontWeight(.bold)
+                        }
+                        .font(.subheadline)
+                        .frame(maxWidth: .infinity)
+                        .padding(.vertical, 12)
+                        .background(Color.blue)
+                        .foregroundColor(.white)
+                        .clipShape(RoundedRectangle(cornerRadius: 12, style: .continuous))
                     }
-                    .font(.subheadline)
-                    .frame(maxWidth: .infinity)
-                    .padding(.vertical, 8)
-                    .background(Color.blue)
-                    .foregroundColor(.white)
-                    .cornerRadius(8)
                 }
             }
         }
-        .padding()
-        .background(
-            RoundedRectangle(cornerRadius: 16)
-                .fill(Color(UIColor.secondarySystemGroupedBackground))
-                .shadow(color: Color.black.opacity(0.04), radius: 6, x: 0, y: 2)
-        )
+        .padding(20)
+        .liquidGlass(cornerRadius: 24, borderOpacity: 0.35)
     }
 
     private var privateTaxLimitCard: some View {
@@ -154,9 +190,9 @@ public struct DashboardView: View {
         let isWarning = workPrivKm > (maxLimit * 0.8)
         let isExceeded = workPrivKm > maxLimit
 
-        return VStack(alignment: .leading, spacing: 10) {
+        return VStack(alignment: .leading, spacing: 12) {
             HStack {
-                Text("Privé Werkauto (Fiscale 500 km limiet)")
+                Text("Privé Werkauto (500 km norm)")
                     .font(.subheadline)
                     .fontWeight(.bold)
 
@@ -170,58 +206,56 @@ public struct DashboardView: View {
 
             ProgressView(value: ratio)
                 .tint(isExceeded ? .red : (isWarning ? .orange : .blue))
+                .scaleEffect(x: 1, y: 1.5, anchor: .center)
 
             HStack {
                 Text(isExceeded ? "⚠️ Limiet overschreden! Bijtelling van toepassing." :
                         (isWarning ? "⚡ Let op: je nadert de 500 km grens." : "✅ Binnen veilige marge."))
                     .font(.caption)
+                    .fontWeight(.medium)
                     .foregroundColor(isExceeded ? .red : (isWarning ? .orange : .secondary))
             }
         }
-        .padding()
-        .background(
-            RoundedRectangle(cornerRadius: 14)
-                .fill(Color(UIColor.secondarySystemGroupedBackground))
-        )
+        .padding(18)
+        .liquidGlass(cornerRadius: 22, borderOpacity: 0.3)
     }
 
     private var monthlyOverviewCard: some View {
-        VStack(alignment: .leading, spacing: 12) {
+        VStack(alignment: .leading, spacing: 14) {
             Text("Overzicht Deze Maand")
                 .font(.headline)
                 .fontWeight(.bold)
 
-            HStack(spacing: 10) {
+            HStack(spacing: 12) {
                 statBox(title: "Totaal", value: String(format: "%.1f km", totalMonthKm), color: .blue)
-                statBox(title: "Zakelijk Werk", value: String(format: "%.1f km", workBizKm), color: .teal)
+                statBox(title: "Zakelijk Werk", value: String(format: "%.1f km", workBizKm), color: .cyan)
                 statBox(title: "Privé Auto", value: String(format: "%.1f km", privPrivKm), color: .green)
             }
         }
-        .padding()
-        .background(
-            RoundedRectangle(cornerRadius: 14)
-                .fill(Color(UIColor.secondarySystemGroupedBackground))
-        )
+        .padding(18)
+        .liquidGlass(cornerRadius: 22, borderOpacity: 0.3)
     }
 
     private func statBox(title: String, value: String, color: Color) -> some View {
         VStack(alignment: .leading, spacing: 4) {
             Text(title)
                 .font(.caption2)
+                .fontWeight(.semibold)
                 .foregroundColor(.secondary)
             Text(value)
                 .font(.subheadline)
-                .fontWeight(.heavy)
+                .fontWeight(.black)
                 .foregroundColor(color)
         }
         .frame(maxWidth: .infinity, alignment: .leading)
-        .padding(10)
-        .background(color.opacity(0.1))
-        .cornerRadius(8)
+        .padding(12)
+        .background(.ultraThinMaterial)
+        .clipShape(RoundedRectangle(cornerRadius: 14, style: .continuous))
+        .overlay(RoundedRectangle(cornerRadius: 14).stroke(color.opacity(0.3), lineWidth: 1))
     }
 
     private var recentTripsSection: some View {
-        VStack(alignment: .leading, spacing: 10) {
+        VStack(alignment: .leading, spacing: 12) {
             HStack {
                 Text("Recente Ritten")
                     .font(.headline)
@@ -230,15 +264,23 @@ public struct DashboardView: View {
                 NavigationLink(destination: TripListView()) {
                     Text("Alles bekijken")
                         .font(.subheadline)
+                        .fontWeight(.semibold)
                         .foregroundColor(.blue)
                 }
             }
 
             if storage.trips.isEmpty {
-                Text("Nog geen ritten geregistreerd. Zodra je gaat rijden verschijnen ze hier.")
-                    .font(.footnote)
-                    .foregroundColor(.secondary)
-                    .padding(.vertical, 10)
+                VStack(spacing: 8) {
+                    Image(systemName: "road.lanes")
+                        .font(.title)
+                        .foregroundColor(.secondary)
+                    Text("Nog geen ritten geregistreerd.")
+                        .font(.subheadline)
+                        .foregroundColor(.secondary)
+                }
+                .frame(maxWidth: .infinity)
+                .padding(.vertical, 24)
+                .liquidGlass(cornerRadius: 18, borderOpacity: 0.25)
             } else {
                 ForEach(storage.trips.prefix(4)) { trip in
                     NavigationLink(destination: TripDetailView(trip: trip)) {
@@ -260,7 +302,7 @@ public struct DashboardView: View {
             VStack(alignment: .leading, spacing: 2) {
                 Text(trip.endAddress)
                     .font(.subheadline)
-                    .fontWeight(.semibold)
+                    .fontWeight(.bold)
                     .lineLimit(1)
                 Text("\(trip.startTime.formatted(date: .abbreviated, time: .shortened)) • \(trip.vehicleName)")
                     .font(.caption)
@@ -272,21 +314,18 @@ public struct DashboardView: View {
             VStack(alignment: .trailing, spacing: 2) {
                 Text(String(format: "%.1f km", trip.distanceInKm))
                     .font(.subheadline)
-                    .fontWeight(.bold)
+                    .fontWeight(.black)
                 Text(trip.tripType.shortLabel)
                     .font(.caption2)
-                    .fontWeight(.semibold)
+                    .fontWeight(.bold)
                     .padding(.horizontal, 6)
                     .padding(.vertical, 2)
-                    .background(trip.tripType.badgeColor.opacity(0.15))
+                    .background(trip.tripType.badgeColor.opacity(0.2))
                     .foregroundColor(trip.tripType.badgeColor)
-                    .cornerRadius(4)
+                    .clipShape(Capsule())
             }
         }
-        .padding(12)
-        .background(
-            RoundedRectangle(cornerRadius: 12)
-                .fill(Color(UIColor.secondarySystemGroupedBackground))
-        )
+        .padding(14)
+        .liquidGlass(cornerRadius: 16, borderOpacity: 0.25)
     }
 }

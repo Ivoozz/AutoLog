@@ -10,16 +10,17 @@ public struct ActiveTripCardView: View {
     public init() {}
 
     public var body: some View {
-        VStack(alignment: .leading, spacing: 14) {
+        VStack(alignment: .leading, spacing: 16) {
             HStack {
                 HStack(spacing: 8) {
                     Circle()
                         .fill(Color.green)
                         .frame(width: 10, height: 10)
                         .scaleEffect(1.2)
+                        .shadow(color: .green.opacity(0.8), radius: 6)
                         .animation(Animation.easeInOut(duration: 0.8).repeatForever(autoreverses: true), value: engine.isTripActive)
 
-                    Text("ACTIEVE RIT BEZIG")
+                    Text("ACTIEVE RIT")
                         .font(.caption)
                         .fontWeight(.heavy)
                         .foregroundColor(.green)
@@ -30,17 +31,24 @@ public struct ActiveTripCardView: View {
                 Text(elapsedTime)
                     .font(.system(.subheadline, design: .monospaced))
                     .fontWeight(.bold)
-                    .padding(.horizontal, 8)
+                    .padding(.horizontal, 10)
                     .padding(.vertical, 4)
-                    .background(Color.secondary.opacity(0.15))
-                    .cornerRadius(6)
+                    .background(.ultraThinMaterial)
+                    .clipShape(Capsule())
+                    .overlay(Capsule().stroke(Color.white.opacity(0.3), lineWidth: 1))
             }
 
             HStack(alignment: .bottom, spacing: 16) {
                 VStack(alignment: .leading, spacing: 2) {
                     Text(String(format: "%.1f", engine.activeDistanceKm))
-                        .font(.system(size: 38, weight: .black, design: .rounded))
-                        .foregroundColor(.primary)
+                        .font(.system(size: 42, weight: .black, design: .rounded))
+                        .foregroundStyle(
+                            LinearGradient(
+                                colors: [.primary, .blue],
+                                startPoint: .topLeading,
+                                endPoint: .bottomTrailing
+                            )
+                        )
                     Text("KILOMETER")
                         .font(.caption2)
                         .fontWeight(.bold)
@@ -50,35 +58,38 @@ public struct ActiveTripCardView: View {
                 Spacer()
 
                 if let vehicle = engine.activeVehicle {
-                    VStack(alignment: .trailing, spacing: 2) {
+                    VStack(alignment: .trailing, spacing: 4) {
                         Text(vehicle.name)
                             .font(.headline)
-                            .fontWeight(.semibold)
+                            .fontWeight(.bold)
                         Text(vehicle.licensePlate)
                             .font(.caption)
-                            .fontWeight(.bold)
-                            .padding(.horizontal, 6)
-                            .padding(.vertical, 2)
-                            .background(Color.yellow.opacity(0.25))
-                            .foregroundColor(.primary)
-                            .cornerRadius(4)
+                            .fontWeight(.black)
+                            .padding(.horizontal, 8)
+                            .padding(.vertical, 3)
+                            .background(Color.yellow.opacity(0.35))
+                            .clipShape(RoundedRectangle(cornerRadius: 6, style: .continuous))
+                            .overlay(RoundedRectangle(cornerRadius: 6).stroke(Color.yellow.opacity(0.6), lineWidth: 1))
                     }
                 }
             }
 
-            VStack(alignment: .leading, spacing: 4) {
+            VStack(alignment: .leading, spacing: 6) {
                 Label {
                     Text(engine.activeStartAddress)
                         .font(.caption)
-                        .foregroundColor(.secondary)
+                        .fontWeight(.medium)
+                        .foregroundColor(.primary)
                         .lineLimit(1)
                 } icon: {
                     Image(systemName: "mappin.and.ellipse")
                         .foregroundColor(.red)
+                        .shadow(color: .red.opacity(0.6), radius: 4)
                 }
             }
 
             Divider()
+                .background(Color.white.opacity(0.2))
 
             // Quick Toggle Type & Stop
             HStack(spacing: 12) {
@@ -92,10 +103,17 @@ public struct ActiveTripCardView: View {
                             .fontWeight(.bold)
                     }
                     .frame(maxWidth: .infinity)
-                    .padding(.vertical, 10)
-                    .background(engine.activeTripType.badgeColor)
+                    .padding(.vertical, 12)
+                    .background(
+                        LinearGradient(
+                            colors: [engine.activeTripType.badgeColor, engine.activeTripType.badgeColor.opacity(0.75)],
+                            startPoint: .topLeading,
+                            endPoint: .bottomTrailing
+                        )
+                    )
                     .foregroundColor(.white)
-                    .cornerRadius(10)
+                    .clipShape(RoundedRectangle(cornerRadius: 14, style: .continuous))
+                    .shadow(color: engine.activeTripType.badgeColor.opacity(0.4), radius: 8, y: 4)
                 }
 
                 Button(action: {
@@ -103,20 +121,17 @@ public struct ActiveTripCardView: View {
                 }) {
                     Image(systemName: "stop.fill")
                         .font(.headline)
-                        .padding(.vertical, 10)
-                        .padding(.horizontal, 16)
-                        .background(Color.red.opacity(0.15))
+                        .padding(.vertical, 12)
+                        .padding(.horizontal, 18)
+                        .background(.ultraThinMaterial)
                         .foregroundColor(.red)
-                        .cornerRadius(10)
+                        .clipShape(RoundedRectangle(cornerRadius: 14, style: .continuous))
+                        .overlay(RoundedRectangle(cornerRadius: 14).stroke(Color.red.opacity(0.5), lineWidth: 1.2))
                 }
             }
         }
-        .padding()
-        .background(
-            RoundedRectangle(cornerRadius: 16)
-                .fill(Color(UIColor.secondarySystemGroupedBackground))
-                .shadow(color: Color.black.opacity(0.08), radius: 8, x: 0, y: 4)
-        )
+        .padding(20)
+        .liquidGlass(cornerRadius: 26, borderOpacity: 0.45, glowColor: Color.blue.opacity(0.25), glowRadius: 18)
         .onReceive(timer) { _ in
             updateTimer()
         }
