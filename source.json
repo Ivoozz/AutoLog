@@ -18,7 +18,7 @@
       "localizedDescription": "AutoLog registreert automatisch al je autoritten zodra CarPlay of Bluetooth verbindt. Voorzien van native Apple CarPlay dashboard-icoon en interface, live Bluetooth-scanner, Liquid Glass design, 500 km bijtellingsbewaker, Woon/Werk herkenning en Gmail PDF export.",
       "iconURL": "https://raw.githubusercontent.com/Ivoozz/AutoLog/main/icon.png",
       "tintColor": "007AFF",
-      "size": 365000,
+      "size": 362904,
       "screenshotURLs": [],
       "versions": [
         {
@@ -26,7 +26,7 @@
           "date": "2026-08-20",
           "localizedDescription": "Dynamische versie-uitlezing in instellingen, Apple CarPlay Dashboard activatie, live Bluetooth apparaatscanner en Liquid Glass menubalk.",
           "downloadURL": "https://github.com/Ivoozz/AutoLog/releases/download/v1.6.1/AutoLog-v1.6.1.ipa",
-          "size": 365000
+          "size": 362904
         }
       ]
     }
