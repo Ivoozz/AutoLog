@@ -2,6 +2,8 @@ import SwiftUI
 
 @main
 struct AutoLogApp: App {
+    @UIApplicationDelegateAdaptor(AppDelegate.self) var appDelegate
+
     @StateObject private var storage = StorageManager.shared
     @StateObject private var locationManager = LocationManager.shared
     @StateObject private var bluetoothManager = BluetoothManager.shared
