@@ -21,6 +21,8 @@ public struct SettingsView: View {
     @State private var workAddress: String = ""
     @State private var isGeocodingHome = false
     @State private var isGeocodingWork = false
+    @State private var isFetchingGpsHome = false
+    @State private var isFetchingGpsWork = false
     @State private var homeGeocodedSuccess = false
     @State private var workGeocodedSuccess = false
 
@@ -39,10 +41,19 @@ public struct SettingsView: View {
 
                         HStack {
                             Button(action: useCurrentLocationForHome) {
-                                Label("GPS Opslaan", systemImage: "location.fill")
-                                    .font(.caption)
+                                HStack(spacing: 4) {
+                                    if isFetchingGpsHome {
+                                        ProgressView().scaleEffect(0.7)
+                                    } else {
+                                        Image(systemName: "location.fill")
+                                    }
+                                    Text(isFetchingGpsHome ? "GPS Ophalen..." : "GPS Opslaan")
+                                        .font(.caption)
+                                        .fontWeight(.semibold)
+                                }
                             }
                             .buttonStyle(.bordered)
+                            .disabled(isFetchingGpsHome)
 
                             Spacer()
 
@@ -77,10 +88,19 @@ public struct SettingsView: View {
 
                         HStack {
                             Button(action: useCurrentLocationForWork) {
-                                Label("GPS Opslaan", systemImage: "location.fill")
-                                    .font(.caption)
+                                HStack(spacing: 4) {
+                                    if isFetchingGpsWork {
+                                        ProgressView().scaleEffect(0.7)
+                                    } else {
+                                        Image(systemName: "location.fill")
+                                    }
+                                    Text(isFetchingGpsWork ? "GPS Ophalen..." : "GPS Opslaan")
+                                        .font(.caption)
+                                        .fontWeight(.semibold)
+                                }
                             }
                             .buttonStyle(.bordered)
+                            .disabled(isFetchingGpsWork)
 
                             Spacer()
 
@@ -260,17 +280,24 @@ public struct SettingsView: View {
     }
 
     private func useCurrentLocationForHome() {
-        guard let loc = locationManager.currentLocation else { return }
+        isFetchingGpsHome = true
         Task {
-            let addr = await GeocodingService.shared.reverseGeocode(latitude: loc.coordinate.latitude, longitude: loc.coordinate.longitude)
-            var home = storage.savedLocations.first(where: { $0.category == .home }) ?? SavedLocation(name: "Thuis", address: addr, category: .home)
-            home.address = addr
-            home.latitude = loc.coordinate.latitude
-            home.longitude = loc.coordinate.longitude
-            DispatchQueue.main.async {
-                self.homeAddress = addr
-                self.storage.addOrUpdateLocation(home)
-                self.homeGeocodedSuccess = true
+            if let loc = await locationManager.requestOneTimeLocation() {
+                let addr = await GeocodingService.shared.reverseGeocode(latitude: loc.coordinate.latitude, longitude: loc.coordinate.longitude)
+                var home = storage.savedLocations.first(where: { $0.category == .home }) ?? SavedLocation(name: "Thuis", address: addr, category: .home)
+                home.address = addr
+                home.latitude = loc.coordinate.latitude
+                home.longitude = loc.coordinate.longitude
+                DispatchQueue.main.async {
+                    self.homeAddress = addr
+                    self.storage.addOrUpdateLocation(home)
+                    self.homeGeocodedSuccess = true
+                    self.isFetchingGpsHome = false
+                }
+            } else {
+                DispatchQueue.main.async {
+                    self.isFetchingGpsHome = false
+                }
             }
         }
     }
@@ -299,17 +326,24 @@ public struct SettingsView: View {
     }
 
     private func useCurrentLocationForWork() {
-        guard let loc = locationManager.currentLocation else { return }
+        isFetchingGpsWork = true
         Task {
-            let addr = await GeocodingService.shared.reverseGeocode(latitude: loc.coordinate.latitude, longitude: loc.coordinate.longitude)
-            var work = storage.savedLocations.first(where: { $0.category == .work }) ?? SavedLocation(name: "Kantoor / Werk", address: addr, category: .work)
-            work.address = addr
-            work.latitude = loc.coordinate.latitude
-            work.longitude = loc.coordinate.longitude
-            DispatchQueue.main.async {
-                self.workAddress = addr
-                self.storage.addOrUpdateLocation(work)
-                self.workGeocodedSuccess = true
+            if let loc = await locationManager.requestOneTimeLocation() {
+                let addr = await GeocodingService.shared.reverseGeocode(latitude: loc.coordinate.latitude, longitude: loc.coordinate.longitude)
+                var work = storage.savedLocations.first(where: { $0.category == .work }) ?? SavedLocation(name: "Kantoor / Werk", address: addr, category: .work)
+                work.address = addr
+                work.latitude = loc.coordinate.latitude
+                work.longitude = loc.coordinate.longitude
+                DispatchQueue.main.async {
+                    self.workAddress = addr
+                    self.storage.addOrUpdateLocation(work)
+                    self.workGeocodedSuccess = true
+                    self.isFetchingGpsWork = false
+                }
+            } else {
+                DispatchQueue.main.async {
+                    self.isFetchingGpsWork = false
+                }
             }
         }
     }

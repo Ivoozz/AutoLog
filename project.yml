@@ -26,8 +26,8 @@ targets:
       path: AutoLog/Info.plist
       properties:
         CFBundleDisplayName: "AutoLog"
-        CFBundleShortVersionString: "1.6.1"
-        CFBundleVersion: "8"
+        CFBundleShortVersionString: "1.6.2"
+        CFBundleVersion: "9"
         UILaunchScreen: {}
         UIRequiredDeviceCapabilities:
           - arm64

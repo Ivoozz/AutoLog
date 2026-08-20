@@ -11,22 +11,22 @@
       "bundleIdentifier": "nl.ivoozz.AutoLog",
       "developerName": "Ivo",
       "subtitle": "Slimme Rittenregistratie",
-      "version": "1.6.1",
+      "version": "1.6.2",
       "versionDate": "2026-08-20",
-      "versionDescription": "Dynamische versie-uitlezing in instellingen, Apple CarPlay Dashboard activatie, live Bluetooth apparaatscanner en Liquid Glass menubalk.",
-      "downloadURL": "https://github.com/Ivoozz/AutoLog/releases/download/v1.6.1/AutoLog-v1.6.1.ipa",
-      "localizedDescription": "AutoLog registreert automatisch al je autoritten zodra CarPlay of Bluetooth verbindt. Voorzien van native Apple CarPlay dashboard-icoon en interface, live Bluetooth-scanner, Liquid Glass design, 500 km bijtellingsbewaker, Woon/Werk herkenning en Gmail PDF export.",
+      "versionDescription": "Werkende 1-tik GPS ophaalknop in instellingen, dynamische versie-uitlezing, Apple CarPlay Dashboard activatie, live Bluetooth apparaatscanner en Liquid Glass menubalk.",
+      "downloadURL": "https://github.com/Ivoozz/AutoLog/releases/download/v1.6.2/AutoLog-v1.6.2.ipa",
+      "localizedDescription": "AutoLog registreert automatisch al je autoritten zodra CarPlay of Bluetooth verbindt. Voorzien van directe GPS-thuis/werk opslag, native Apple CarPlay dashboard-icoon en interface, live Bluetooth-scanner, Liquid Glass design, 500 km bijtellingsbewaker, Woon/Werk herkenning en Gmail PDF export.",
       "iconURL": "https://raw.githubusercontent.com/Ivoozz/AutoLog/main/icon.png",
       "tintColor": "007AFF",
-      "size": 362904,
+      "size": 365000,
       "screenshotURLs": [],
       "versions": [
         {
-          "version": "1.6.1",
+          "version": "1.6.2",
           "date": "2026-08-20",
-          "localizedDescription": "Dynamische versie-uitlezing in instellingen, Apple CarPlay Dashboard activatie, live Bluetooth apparaatscanner en Liquid Glass menubalk.",
-          "downloadURL": "https://github.com/Ivoozz/AutoLog/releases/download/v1.6.1/AutoLog-v1.6.1.ipa",
-          "size": 362904
+          "localizedDescription": "Werkende 1-tik GPS ophaalknop in instellingen, dynamische versie-uitlezing, Apple CarPlay Dashboard activatie, live Bluetooth apparaatscanner en Liquid Glass menubalk.",
+          "downloadURL": "https://github.com/Ivoozz/AutoLog/releases/download/v1.6.2/AutoLog-v1.6.2.ipa",
+          "size": 365000
         }
       ]
     }
