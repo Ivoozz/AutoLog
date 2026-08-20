@@ -76,14 +76,14 @@ public struct SettingsView: View {
             }
             .navigationTitle("Instellingen")
             .onAppear(perform: loadSettings)
-            .onChange(of: driverName) { _ in saveSettings() }
-            .onChange(of: recipientEmail) { _ in saveSettings() }
-            .onChange(of: autoExportMonthly) { _ in saveSettings() }
-            .onChange(of: resendApiKey) { _ in saveSettings() }
-            .onChange(of: autoStartOnCarPlay) { _ in saveSettings() }
-            .onChange(of: autoStartOnBluetooth) { _ in saveSettings() }
-            .onChange(of: minimumTripDistanceMeters) { _ in saveSettings() }
-            .onChange(of: maxTaxFreePrivateKm) { _ in saveSettings() }
+            .onChange(of: driverName) { saveSettings() }
+            .onChange(of: recipientEmail) { saveSettings() }
+            .onChange(of: autoExportMonthly) { saveSettings() }
+            .onChange(of: resendApiKey) { saveSettings() }
+            .onChange(of: autoStartOnCarPlay) { saveSettings() }
+            .onChange(of: autoStartOnBluetooth) { saveSettings() }
+            .onChange(of: minimumTripDistanceMeters) { saveSettings() }
+            .onChange(of: maxTaxFreePrivateKm) { saveSettings() }
         }
     }
 
