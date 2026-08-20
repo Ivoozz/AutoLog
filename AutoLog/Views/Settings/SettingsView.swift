@@ -169,7 +169,9 @@ public struct SettingsView: View {
                     HStack {
                         Text("Versie")
                         Spacer()
-                        Text("1.3.0 (Liquid Glass Edition)")
+                        let appVersion = Bundle.main.infoDictionary?["CFBundleShortVersionString"] as? String ?? "1.6.0"
+                        let buildNumber = Bundle.main.infoDictionary?["CFBundleVersion"] as? String ?? "7"
+                        Text("\(appVersion) (Build \(buildNumber))")
                             .foregroundColor(.secondary)
                     }
                     HStack {

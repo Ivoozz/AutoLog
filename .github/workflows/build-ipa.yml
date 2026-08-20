@@ -50,7 +50,7 @@ jobs:
           mkdir -p Payload
           cp -r build/AutoLog.xcarchive/Products/Applications/AutoLog.app Payload/
           zip -r AutoLog.ipa Payload
-          cp AutoLog.ipa AutoLog-v1.6.0.ipa
+          cp AutoLog.ipa AutoLog-v1.6.1.ipa
 
       - name: Upload IPA Artifact
         uses: actions/upload-artifact@v4
@@ -58,5 +58,5 @@ jobs:
           name: AutoLog-iOS-App
           path: |
             AutoLog.ipa
-            AutoLog-v1.6.0.ipa
+            AutoLog-v1.6.1.ipa
           retention-days: 14

@@ -11,22 +11,22 @@
       "bundleIdentifier": "nl.ivoozz.AutoLog",
       "developerName": "Ivo",
       "subtitle": "Slimme Rittenregistratie",
-      "version": "1.6.0",
+      "version": "1.6.1",
       "versionDate": "2026-08-20",
-      "versionDescription": "Officiële CarPlay Dashboard Scene activatie, CarPlay entitlements, live Bluetooth apparaatscanner en Liquid Glass menubalk.",
-      "downloadURL": "https://github.com/Ivoozz/AutoLog/releases/download/v1.6.0/AutoLog-v1.6.0.ipa",
+      "versionDescription": "Dynamische versie-uitlezing in instellingen, Apple CarPlay Dashboard activatie, live Bluetooth apparaatscanner en Liquid Glass menubalk.",
+      "downloadURL": "https://github.com/Ivoozz/AutoLog/releases/download/v1.6.1/AutoLog-v1.6.1.ipa",
       "localizedDescription": "AutoLog registreert automatisch al je autoritten zodra CarPlay of Bluetooth verbindt. Voorzien van native Apple CarPlay dashboard-icoon en interface, live Bluetooth-scanner, Liquid Glass design, 500 km bijtellingsbewaker, Woon/Werk herkenning en Gmail PDF export.",
       "iconURL": "https://raw.githubusercontent.com/Ivoozz/AutoLog/main/icon.png",
       "tintColor": "007AFF",
-      "size": 362231,
+      "size": 365000,
       "screenshotURLs": [],
       "versions": [
         {
-          "version": "1.6.0",
+          "version": "1.6.1",
           "date": "2026-08-20",
-          "localizedDescription": "Officiële CarPlay Dashboard Scene activatie, CarPlay entitlements, live Bluetooth apparaatscanner en Liquid Glass menubalk.",
-          "downloadURL": "https://github.com/Ivoozz/AutoLog/releases/download/v1.6.0/AutoLog-v1.6.0.ipa",
-          "size": 362231
+          "localizedDescription": "Dynamische versie-uitlezing in instellingen, Apple CarPlay Dashboard activatie, live Bluetooth apparaatscanner en Liquid Glass menubalk.",
+          "downloadURL": "https://github.com/Ivoozz/AutoLog/releases/download/v1.6.1/AutoLog-v1.6.1.ipa",
+          "size": 365000
         }
       ]
     }
