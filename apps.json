@@ -1,0 +1,25 @@
+{
+  "name": "AutoLog Community Source",
+  "identifier": "nl.ivoozz.autolog.source",
+  "subtitle": "Slimme iOS & CarPlay Rittenregistratie",
+  "description": "Automatische rittenregistratie voor CarPlay & iPhone met zakelijk/privé scheiding en Belastingdienst PDF rapportage.",
+  "iconURL": "https://raw.githubusercontent.com/Ivoozz/AutoLog/main/icon.png",
+  "website": "https://github.com/Ivoozz/AutoLog",
+  "apps": [
+    {
+      "name": "AutoLog",
+      "bundleIdentifier": "nl.ivoozz.AutoLog",
+      "developerName": "Ivo",
+      "version": "1.2.0",
+      "versionDate": "2026-08-20T15:58:00+02:00",
+      "versionDescription": "Volledige CarPlay integratie, automatische Woon- & Werkadres geofencing, en Belastingdienst PDF rapportage.",
+      "downloadURL": "https://github.com/Ivoozz/AutoLog/releases/download/v1.2.0/AutoLog.ipa",
+      "localizedDescription": "AutoLog registreert automatisch al je autoritten zodra CarPlay of Bluetooth verbindt. Voorzien van Apple CarPlay dashboardbediening, 500 km bijtellingsbewaker, Woon- en Werkherkenning en maandelijkse Belastingdienst PDF export naar je inbox.",
+      "iconURL": "https://raw.githubusercontent.com/Ivoozz/AutoLog/main/icon.png",
+      "tintColor": "007AFF",
+      "size": 304128,
+      "screenshotURLs": []
+    }
+  ],
+  "news": []
+}
