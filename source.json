@@ -11,29 +11,29 @@
       "bundleIdentifier": "nl.ivoozz.AutoLog",
       "developerName": "Ivo",
       "subtitle": "Slimme Rittenregistratie",
-      "version": "1.3.0",
+      "version": "1.4.0",
       "versionDate": "2026-08-20",
-      "versionDescription": "Liquid Glass (iOS 26+) design overhaul, Gmail SMTP ondersteuning, géén demo data meer, en directe CarPlay bediening.",
-      "downloadURL": "https://github.com/Ivoozz/AutoLog/releases/download/v1.3.0/AutoLog.ipa",
-      "localizedDescription": "AutoLog registreert automatisch al je autoritten zodra CarPlay of Bluetooth verbindt. Voorzien van ultra-modern Liquid Glass design, Apple CarPlay dashboardbediening, 500 km bijtellingsbewaker, Woon- en Werkherkenning en maandelijkse Belastingdienst PDF export via Gmail.",
+      "versionDescription": "Volledige Liquid Glass Floating Navigation Bar (iOS 26+ design), Gmail integratie en Apple CarPlay.",
+      "downloadURL": "https://github.com/Ivoozz/AutoLog/releases/download/v1.4.0/AutoLog.ipa",
+      "localizedDescription": "AutoLog registreert automatisch al je autoritten zodra CarPlay of Bluetooth verbindt. Voorzien van ultra-modern Liquid Glass design met zwevende glazen menubalk, Apple CarPlay dashboardbediening, 500 km bijtellingsbewaker, Woon- en Werkherkenning en maandelijkse Belastingdienst PDF export via Gmail.",
       "iconURL": "https://raw.githubusercontent.com/Ivoozz/AutoLog/main/icon.png",
       "tintColor": "007AFF",
-      "size": 330860,
+      "size": 335000,
       "screenshotURLs": [],
       "versions": [
+        {
+          "version": "1.4.0",
+          "date": "2026-08-20",
+          "localizedDescription": "Volledige Liquid Glass Floating Navigation Bar (iOS 26+ design), Gmail integratie en Apple CarPlay.",
+          "downloadURL": "https://github.com/Ivoozz/AutoLog/releases/download/v1.4.0/AutoLog.ipa",
+          "size": 335000
+        },
         {
           "version": "1.3.0",
           "date": "2026-08-20",
           "localizedDescription": "Liquid Glass (iOS 26+) design overhaul, Gmail SMTP ondersteuning, géén demo data meer, en directe CarPlay bediening.",
           "downloadURL": "https://github.com/Ivoozz/AutoLog/releases/download/v1.3.0/AutoLog.ipa",
           "size": 330860
-        },
-        {
-          "version": "1.2.0",
-          "date": "2026-08-20",
-          "localizedDescription": "Woon- en werkadressen herkenning.",
-          "downloadURL": "https://github.com/Ivoozz/AutoLog/releases/download/v1.2.0/AutoLog.ipa",
-          "size": 304128
         }
       ]
     }

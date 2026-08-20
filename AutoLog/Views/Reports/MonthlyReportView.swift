@@ -35,127 +35,135 @@ public struct MonthlyReportView: View {
 
     public var body: some View {
         NavigationStack {
-            ScrollView {
-                VStack(spacing: 20) {
-                    // Month Picker Card
-                    VStack(alignment: .leading, spacing: 12) {
-                        Text("Selecteer Periode")
-                            .font(.subheadline)
-                            .foregroundColor(.secondary)
+            ZStack {
+                LiquidBackground()
 
-                        DatePicker(
-                            "Maand & Jaar",
-                            selection: $selectedDate,
-                            displayedComponents: [.date]
-                        )
-                        .datePickerStyle(.compact)
-                    }
-                    .padding()
-                    .background(
-                        RoundedRectangle(cornerRadius: 14)
-                            .fill(Color(UIColor.secondarySystemGroupedBackground))
-                    )
+                ScrollView {
+                    VStack(spacing: 20) {
+                        // Month Picker Card
+                        VStack(alignment: .leading, spacing: 12) {
+                            Text("Selecteer Periode")
+                                .font(.subheadline)
+                                .fontWeight(.semibold)
+                                .foregroundColor(.secondary)
 
-                    // Summary Stats Card
-                    VStack(alignment: .leading, spacing: 16) {
-                        HStack {
-                            Text("Overzicht \(monthName)")
-                                .font(.headline)
-                                .fontWeight(.bold)
-                            Spacer()
-                            Text("\(tripsInSelectedMonth.count) ritten")
-                                .font(.caption)
-                                .padding(.horizontal, 8)
-                                .padding(.vertical, 4)
-                                .background(Color.blue.opacity(0.12))
-                                .foregroundColor(.blue)
-                                .cornerRadius(6)
-                        }
-
-                        Divider()
-
-                        VStack(spacing: 12) {
-                            summaryRow(title: "Totaal Gereden", value: String(format: "%.1f km", totalKm), color: .blue)
-                            summaryRow(title: "Zakelijk (Werkauto)", value: String(format: "%.1f km", workBizKm), color: .teal)
-                            summaryRow(
-                                title: "Privé (Werkauto)",
-                                value: String(format: "%.1f km", workPrivKm),
-                                color: workPrivKm > storage.settings.maxTaxFreePrivateKm ? .red : .orange
+                            DatePicker(
+                                "Maand & Jaar",
+                                selection: $selectedDate,
+                                displayedComponents: [.date]
                             )
-                            summaryRow(title: "Privé (Privéauto)", value: String(format: "%.1f km", privPrivKm), color: .green)
+                            .datePickerStyle(.compact)
                         }
+                        .padding(18)
+                        .liquidGlass(cornerRadius: 22, borderOpacity: 0.3)
 
-                        if workPrivKm > storage.settings.maxTaxFreePrivateKm {
+                        // Summary Stats Card
+                        VStack(alignment: .leading, spacing: 16) {
                             HStack {
-                                Image(systemName: "exclamationmark.triangle.fill")
-                                    .foregroundColor(.red)
-                                Text("Let op: de 500 km norm voor privégebruik in de werkauto is overschreden!")
+                                Text("Overzicht \(monthName)")
+                                    .font(.headline)
+                                    .fontWeight(.bold)
+                                Spacer()
+                                Text("\(tripsInSelectedMonth.count) ritten")
                                     .font(.caption)
-                                    .foregroundColor(.red)
+                                    .fontWeight(.bold)
+                                    .padding(.horizontal, 10)
+                                    .padding(.vertical, 4)
+                                    .background(Color.blue.opacity(0.2))
+                                    .foregroundColor(.blue)
+                                    .clipShape(Capsule())
                             }
-                            .padding(8)
-                            .background(Color.red.opacity(0.1))
-                            .cornerRadius(8)
+
+                            Divider()
+                                .background(Color.white.opacity(0.15))
+
+                            VStack(spacing: 12) {
+                                summaryRow(title: "Totaal Gereden", value: String(format: "%.1f km", totalKm), color: .blue)
+                                summaryRow(title: "Zakelijk (Werkauto)", value: String(format: "%.1f km", workBizKm), color: .cyan)
+                                summaryRow(
+                                    title: "Privé (Werkauto)",
+                                    value: String(format: "%.1f km", workPrivKm),
+                                    color: workPrivKm > storage.settings.maxTaxFreePrivateKm ? .red : .orange
+                                )
+                                summaryRow(title: "Privé (Privéauto)", value: String(format: "%.1f km", privPrivKm), color: .green)
+                            }
+
+                            if workPrivKm > storage.settings.maxTaxFreePrivateKm {
+                                HStack {
+                                    Image(systemName: "exclamationmark.triangle.fill")
+                                        .foregroundColor(.red)
+                                    Text("Let op: de 500 km norm voor privégebruik in de werkauto is overschreden!")
+                                        .font(.caption)
+                                        .fontWeight(.bold)
+                                        .foregroundColor(.red)
+                                }
+                                .padding(10)
+                                .background(Color.red.opacity(0.15))
+                                .clipShape(RoundedRectangle(cornerRadius: 10, style: .continuous))
+                            }
+                        }
+                        .padding(20)
+                        .liquidGlass(cornerRadius: 24, borderOpacity: 0.35)
+
+                        // Action Buttons
+                        VStack(spacing: 14) {
+                            Button(action: openPdfPreview) {
+                                HStack {
+                                    Image(systemName: "doc.text.fill")
+                                    Text("Bekijk Belastingdienst PDF")
+                                        .fontWeight(.bold)
+                                }
+                                .frame(maxWidth: .infinity)
+                                .padding(.vertical, 14)
+                                .background(
+                                    LinearGradient(
+                                        colors: [.blue, .cyan],
+                                        startPoint: .topLeading,
+                                        endPoint: .bottomTrailing
+                                    )
+                                )
+                                .foregroundColor(.white)
+                                .clipShape(RoundedRectangle(cornerRadius: 16, style: .continuous))
+                                .shadow(color: .blue.opacity(0.4), radius: 10, y: 4)
+                            }
+
+                            Button(action: sendEmailReport) {
+                                HStack {
+                                    if isSendingEmail {
+                                        ProgressView()
+                                            .tint(.white)
+                                    } else {
+                                        Image(systemName: "envelope.fill")
+                                    }
+                                    Text(isSendingEmail ? "Verzenden via Gmail..." : "Verstuur naar Inbox (\(storage.settings.recipientEmail.isEmpty ? "Stel e-mail in" : storage.settings.recipientEmail))")
+                                        .fontWeight(.semibold)
+                                }
+                                .frame(maxWidth: .infinity)
+                                .padding(.vertical, 14)
+                                .background(storage.settings.recipientEmail.isEmpty ? AnyView(Color.gray.opacity(0.4)) : AnyView(LinearGradient(colors: [.indigo, .purple], startPoint: .topLeading, endPoint: .bottomTrailing)))
+                                .foregroundColor(.white)
+                                .clipShape(RoundedRectangle(cornerRadius: 16, style: .continuous))
+                                .shadow(color: storage.settings.recipientEmail.isEmpty ? .clear : .indigo.opacity(0.35), radius: 8, y: 3)
+                            }
+                            .disabled(isSendingEmail || storage.settings.recipientEmail.isEmpty)
+
+                            Button(action: sharePdf) {
+                                HStack {
+                                    Image(systemName: "square.and.arrow.up")
+                                    Text("Deel / Exporteer PDF...")
+                                        .fontWeight(.semibold)
+                                }
+                                .frame(maxWidth: .infinity)
+                                .padding(.vertical, 14)
+                                .liquidGlass(cornerRadius: 16, borderOpacity: 0.25)
+                                .foregroundColor(.primary)
+                            }
                         }
                     }
                     .padding()
-                    .background(
-                        RoundedRectangle(cornerRadius: 14)
-                            .fill(Color(UIColor.secondarySystemGroupedBackground))
-                    )
-
-                    // Action Buttons
-                    VStack(spacing: 12) {
-                        Button(action: openPdfPreview) {
-                            HStack {
-                                Image(systemName: "doc.text.fill")
-                                Text("Bekijk Belastingdienst PDF")
-                                    .fontWeight(.bold)
-                            }
-                            .frame(maxWidth: .infinity)
-                            .padding(.vertical, 14)
-                            .background(Color.blue)
-                            .foregroundColor(.white)
-                            .cornerRadius(12)
-                        }
-
-                        Button(action: sendEmailReport) {
-                            HStack {
-                                if isSendingEmail {
-                                    ProgressView()
-                                        .tint(.white)
-                                } else {
-                                    Image(systemName: "envelope.fill")
-                                }
-                                Text(isSendingEmail ? "Verzenden..." : "Verstuur naar Inbox (\(storage.settings.recipientEmail.isEmpty ? "Stel e-mail in" : storage.settings.recipientEmail))")
-                                    .fontWeight(.semibold)
-                            }
-                            .frame(maxWidth: .infinity)
-                            .padding(.vertical, 14)
-                            .background(storage.settings.recipientEmail.isEmpty ? Color.gray : Color.indigo)
-                            .foregroundColor(.white)
-                            .cornerRadius(12)
-                        }
-                        .disabled(isSendingEmail || storage.settings.recipientEmail.isEmpty)
-
-                        Button(action: sharePdf) {
-                            HStack {
-                                Image(systemName: "square.and.arrow.up")
-                                Text("Deel / Exporteer PDF...")
-                                    .fontWeight(.medium)
-                            }
-                            .frame(maxWidth: .infinity)
-                            .padding(.vertical, 12)
-                            .background(Color(UIColor.secondarySystemGroupedBackground))
-                            .foregroundColor(.primary)
-                            .cornerRadius(12)
-                        }
-                    }
                 }
-                .padding()
             }
             .navigationTitle("Rapportages")
-            .background(Color(UIColor.systemGroupedBackground))
             .sheet(isPresented: $showingPdfSheet) {
                 if let data = generatedPdfData {
                     PDFViewerSheet(pdfData: data, title: "Rapport \(monthName)")
