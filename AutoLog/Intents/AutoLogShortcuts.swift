@@ -5,6 +5,8 @@ public struct StartTripIntent: AppIntent {
     public static var title: LocalizedStringResource = "Start Rittenregistratie"
     public static var description = IntentDescription("Start direct een actieve ritregistratie voor je verbonden auto.")
 
+    public init() {}
+
     public func perform() async throws -> some IntentResult & ProvidesDialog {
         let engine = TripDetectionEngine.shared
         let storage = StorageManager.shared
@@ -24,6 +26,8 @@ public struct StopTripIntent: AppIntent {
     public static var title: LocalizedStringResource = "Stop Rittenregistratie"
     public static var description = IntentDescription("Beëindig de huidige actieve rit en sla de gegevens op.")
 
+    public init() {}
+
     public func perform() async throws -> some IntentResult & ProvidesDialog {
         let engine = TripDetectionEngine.shared
         await MainActor.run {
@@ -36,6 +40,8 @@ public struct StopTripIntent: AppIntent {
 public struct SwitchTripTypeIntent: AppIntent {
     public static var title: LocalizedStringResource = "Wissel Zakelijk / Privé"
     public static var description = IntentDescription("Wissel het type van de huidige actieve rit tussen Zakelijk en Privé.")
+
+    public init() {}
 
     public func perform() async throws -> some IntentResult & ProvidesDialog {
         let engine = TripDetectionEngine.shared

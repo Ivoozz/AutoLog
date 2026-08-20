@@ -90,6 +90,7 @@ public final class PDFReportGenerator {
         return data
     }
 
+    @discardableResult
     private func drawHeader(
         in cgContext: CGContext,
         pageRect: CGRect,
