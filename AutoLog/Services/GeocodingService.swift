@@ -7,6 +7,40 @@ public final class GeocodingService {
 
     private init() {}
 
+    public func geocodeAddress(_ addressString: String) async -> CLLocationCoordinate2D? {
+        guard !addressString.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty else {
+            return nil
+        }
+        do {
+            let placemarks = try await geocoder.geocodeAddressString(addressString)
+            return placemarks.first?.location?.coordinate
+        } catch {
+            print("Forward geocoding mislukt voor '\(addressString)': \(error.localizedDescription)")
+            return nil
+        }
+    }
+
+    public func resolveAddress(
+        latitude: Double,
+        longitude: Double,
+        savedLocations: [SavedLocation]
+    ) async -> (displayAddress: String, matchedLocation: SavedLocation?) {
+        // 1. Check if coordinate matches any Saved Location (Thuis of Werk)
+        for loc in savedLocations {
+            if loc.matches(latitude: latitude, longitude: longitude) {
+                if !loc.address.isEmpty {
+                    return ("\(loc.name) (\(loc.address))", loc)
+                } else {
+                    return (loc.name, loc)
+                }
+            }
+        }
+
+        // 2. Fallback to Apple Reverse Geocoding
+        let reverseAddr = await reverseGeocode(latitude: latitude, longitude: longitude)
+        return (reverseAddr, nil)
+    }
+
     public func reverseGeocode(latitude: Double, longitude: Double) async -> String {
         let location = CLLocation(latitude: latitude, longitude: longitude)
         do {

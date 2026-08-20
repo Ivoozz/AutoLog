@@ -7,15 +7,20 @@ public final class StorageManager: ObservableObject {
     @Published public var vehicles: [Vehicle] = []
     @Published public var trips: [Trip] = []
     @Published public var settings: UserSettings = UserSettings()
+    @Published public var savedLocations: [SavedLocation] = []
 
     private let vehiclesKey = "autolog_vehicles_store"
     private let tripsKey = "autolog_trips_store"
     private let settingsKey = "autolog_settings_store"
+    private let locationsKey = "autolog_saved_locations_store"
 
     private init() {
         loadData()
         if vehicles.isEmpty {
             seedInitialVehicles()
+        }
+        if savedLocations.isEmpty {
+            seedInitialLocations()
         }
     }
 
@@ -34,6 +39,11 @@ public final class StorageManager: ObservableObject {
            let decoded = try? JSONDecoder().decode(UserSettings.self, from: data) {
             self.settings = decoded
         }
+
+        if let data = UserDefaults.standard.data(forKey: locationsKey),
+           let decoded = try? JSONDecoder().decode([SavedLocation].self, from: data) {
+            self.savedLocations = decoded
+        }
     }
 
     public func saveVehicles() {
@@ -51,6 +61,12 @@ public final class StorageManager: ObservableObject {
     public func saveSettings() {
         if let encoded = try? JSONEncoder().encode(settings) {
             UserDefaults.standard.set(encoded, forKey: settingsKey)
+        }
+    }
+
+    public func saveLocations() {
+        if let encoded = try? JSONEncoder().encode(savedLocations) {
+            UserDefaults.standard.set(encoded, forKey: locationsKey)
         }
     }
 
@@ -90,6 +106,20 @@ public final class StorageManager: ObservableObject {
         saveVehicles()
     }
 
+    public func addOrUpdateLocation(_ location: SavedLocation) {
+        if let index = savedLocations.firstIndex(where: { $0.id == location.id }) {
+            savedLocations[index] = location
+        } else {
+            savedLocations.append(location)
+        }
+        saveLocations()
+    }
+
+    public func deleteLocation(id: UUID) {
+        savedLocations.removeAll(where: { $0.id == id })
+        saveLocations()
+    }
+
     private func seedInitialVehicles() {
         let workCar = Vehicle(
             name: "Werkauto (CarPlay / BT)",
@@ -109,5 +139,26 @@ public final class StorageManager: ObservableObject {
         )
         vehicles = [workCar, privateCar]
         saveVehicles()
+    }
+
+    private func seedInitialLocations() {
+        let home = SavedLocation(
+            name: "Thuis",
+            address: "",
+            latitude: 0.0,
+            longitude: 0.0,
+            radiusMeters: 250.0,
+            category: .home
+        )
+        let work = SavedLocation(
+            name: "Kantoor / Werk",
+            address: "",
+            latitude: 0.0,
+            longitude: 0.0,
+            radiusMeters: 250.0,
+            category: .work
+        )
+        savedLocations = [home, work]
+        saveLocations()
     }
 }

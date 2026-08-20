@@ -19,6 +19,7 @@ public final class TripDetectionEngine: ObservableObject {
     private let geocoding = GeocodingService.shared
 
     private var startCoordinate: CoordinatePoint?
+    private var matchedStartLocation: SavedLocation?
 
     private init() {
         bindLocationUpdates()
@@ -54,12 +55,14 @@ public final class TripDetectionEngine: ObservableObject {
 
     private func resolveStartAddress(point: CoordinatePoint) {
         Task {
-            let address = await geocoding.reverseGeocode(
+            let result = await geocoding.resolveAddress(
                 latitude: point.latitude,
-                longitude: point.longitude
+                longitude: point.longitude,
+                savedLocations: storage.savedLocations
             )
             DispatchQueue.main.async {
-                self.activeStartAddress = address
+                self.activeStartAddress = result.displayAddress
+                self.matchedStartLocation = result.matchedLocation
             }
         }
     }
@@ -98,6 +101,7 @@ public final class TripDetectionEngine: ObservableObject {
         self.activeDistanceKm = 0.0
         self.activeStartAddress = "Locatie ophalen..."
         self.startCoordinate = nil
+        self.matchedStartLocation = nil
         self.isTripActive = true
 
         locationManager.startTripTracking()
@@ -161,13 +165,36 @@ public final class TripDetectionEngine: ObservableObject {
 
         Task {
             var finalStartAddr = currentStartAddr
+            var finalStartLoc = self.matchedStartLocation
+
             if (finalStartAddr.contains("Locatie") || finalStartAddr.contains("Onbekend")), let sc = startCoord {
-                finalStartAddr = await self.geocoding.reverseGeocode(latitude: sc.latitude, longitude: sc.longitude)
+                let sRes = await self.geocoding.resolveAddress(
+                    latitude: sc.latitude,
+                    longitude: sc.longitude,
+                    savedLocations: self.storage.savedLocations
+                )
+                finalStartAddr = sRes.displayAddress
+                finalStartLoc = sRes.matchedLocation
             }
 
             var finalEndAddr = "Onbekende bestemming"
+            var finalEndLoc: SavedLocation? = nil
             if let ec = endCoord {
-                finalEndAddr = await self.geocoding.reverseGeocode(latitude: ec.latitude, longitude: ec.longitude)
+                let eRes = await self.geocoding.resolveAddress(
+                    latitude: ec.latitude,
+                    longitude: ec.longitude,
+                    savedLocations: self.storage.savedLocations
+                )
+                finalEndAddr = eRes.displayAddress
+                finalEndLoc = eRes.matchedLocation
+            }
+
+            // Auto-detect Woon-werkverkeer
+            var autoPurpose = self.activeTripType == .workBusiness ? "Zakelijke rit" : "Privé rit"
+            if let sl = finalStartLoc, let el = finalEndLoc {
+                if (sl.category == .home && el.category == .work) || (sl.category == .work && el.category == .home) {
+                    autoPurpose = "Woon-werkverkeer"
+                }
             }
 
             let newTrip = Trip(
@@ -184,7 +211,7 @@ public final class TripDetectionEngine: ObservableObject {
                 startOdometer: startOdo,
                 endOdometer: endOdo,
                 tripType: self.activeTripType,
-                purposeDescription: self.activeTripType == .workBusiness ? "Zakelijke rit" : "Privé rit",
+                purposeDescription: autoPurpose,
                 routePoints: recordedPoints,
                 isExported: false
             )
