@@ -1,0 +1,49 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+<plist version="1.0">
+<dict>
+    <key>CFBundleDevelopmentRegion</key>
+    <string>nl</string>
+    <key>CFBundleExecutable</key>
+    <string>$(EXECUTABLE_NAME)</string>
+    <key>CFBundleIdentifier</key>
+    <string>$(PRODUCT_BUNDLE_IDENTIFIER)</string>
+    <key>CFBundleInfoDictionaryVersion</key>
+    <string>6.0</string>
+    <key>CFBundleName</key>
+    <string>$(PRODUCT_NAME)</string>
+    <key>CFBundlePackageType</key>
+    <string>APPL</string>
+    <key>CFBundleShortVersionString</key>
+    <string>1.0.0</string>
+    <key>CFBundleVersion</key>
+    <string>1</string>
+    <key>LSRequiresIPhoneOS</key>
+    <true/>
+    <key>UIBackgroundModes</key>
+    <array>
+        <string>location</string>
+        <string>bluetooth-central</string>
+        <string>fetch</string>
+        <string>processing</string>
+    </array>
+    <key>NSLocationWhenInUseUsageDescription</key>
+    <string>AutoLog registreert je gereden route tijdens actieve ritten.</string>
+    <key>NSLocationAlwaysAndWhenInUseUsageDescription</key>
+    <string>AutoLog heeft continu locatietoegang nodig om ritten automatisch te starten en bij te houden wanneer CarPlay of Bluetooth verbindt.</string>
+    <key>NSLocationAlwaysUsageDescription</key>
+    <string>AutoLog heeft continu locatietoegang nodig om ritten automatisch op de achtergrond vast te leggen.</string>
+    <key>NSBluetoothAlwaysUsageDescription</key>
+    <string>AutoLog gebruikt Bluetooth om te detecteren wanneer je in je werk- of privéauto stapt.</string>
+    <key>NSBluetoothPeripheralUsageDescription</key>
+    <string>AutoLog herkent je voertuig via de Bluetooth-verbinding.</string>
+    <key>NSMotionUsageDescription</key>
+    <string>AutoLog gebruikt bewegingssensoren om efficiënt te detecteren wanneer je auto rijdt en batterij te besparen.</string>
+    <key>UILaunchScreen</key>
+    <dict/>
+    <key>UISupportedInterfaceOrientations</key>
+    <array>
+        <string>UIInterfaceOrientationPortrait</string>
+    </array>
+</dict>
+</plist>

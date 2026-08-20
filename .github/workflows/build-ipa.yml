@@ -1,0 +1,51 @@
+name: Build iOS IPA (AutoLog)
+
+on:
+  push:
+    branches: [ "main", "master" ]
+  pull_request:
+    branches: [ "main", "master" ]
+  workflow_dispatch:
+
+jobs:
+  build:
+    name: Build Unsigned IPA
+    runs-on: macos-14
+
+    steps:
+      - name: Checkout Repository
+        uses: actions/checkout@v4
+
+      - name: Select Xcode
+        run: sudo xcode-select -s /Applications/Xcode_15.4.app
+
+      - name: Install XcodeGen
+        run: brew install xcodegen
+
+      - name: Generate Xcode Project
+        run: xcodegen generate
+
+      - name: Build Archive
+        run: |
+          xcodebuild -project AutoLog.xcodeproj \
+            -scheme AutoLog \
+            -destination "generic/platform=iOS" \
+            -configuration Release \
+            archive \
+            -archivePath build/AutoLog.xcarchive \
+            CODE_SIGNING_ALLOWED=NO \
+            CODE_SIGNING_REQUIRED=NO \
+            CODE_SIGN_IDENTITY=""
+
+      - name: Package Payload to IPA
+        run: |
+          mkdir -p Payload
+          cp -r build/AutoLog.xcarchive/Products/Applications/AutoLog.app Payload/
+          zip -r AutoLog.ipa Payload
+
+      - name: Upload IPA Artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: AutoLog-iOS-App
+          path: AutoLog.ipa
+          retention-days: 14
