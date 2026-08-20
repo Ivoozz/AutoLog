@@ -10,7 +10,7 @@ on:
 jobs:
   build:
     name: Build Unsigned IPA
-    runs-on: macos-14
+    runs-on: macos-15
 
     steps:
       - name: Checkout Repository
@@ -18,7 +18,12 @@ jobs:
 
       - name: Select Xcode
         run: |
-          echo "Selected Xcode: $(xcode-select -p)"
+          XCODE_PATH=$(find /Applications -maxdepth 1 -name "Xcode_16*.app" | sort -V | tail -n 1)
+          if [ -n "$XCODE_PATH" ]; then
+            echo "Selecting $XCODE_PATH"
+            sudo xcode-select -s "$XCODE_PATH"
+          fi
+          echo "Active Xcode: $(xcode-select -p)"
           xcodebuild -version
 
 
