@@ -26,8 +26,8 @@ targets:
       path: AutoLog/Info.plist
       properties:
         CFBundleDisplayName: "AutoLog"
-        CFBundleShortVersionString: "1.6.2"
-        CFBundleVersion: "9"
+        CFBundleShortVersionString: "1.7.0"
+        CFBundleVersion: "10"
         UILaunchScreen: {}
         UIRequiredDeviceCapabilities:
           - arm64
@@ -35,6 +35,7 @@ targets:
           - UIInterfaceOrientationPortrait
         UIBackgroundModes:
           - location
+          - audio
           - bluetooth-central
           - processing
           - fetch
@@ -42,8 +43,9 @@ targets:
           UIApplicationSupportsMultipleScenes: true
           UISceneConfigurations:
             CPTemplateApplicationSceneSessionRoleApplication:
-              - UISceneConfigurationName: "CarPlay"
-                UISceneDelegateClassName: "$(PRODUCT_MODULE_NAME).CarPlaySceneDelegate"
+              - UISceneClassName: "CPTemplateApplicationScene"
+                UISceneConfigurationName: "CarPlay"
+                UISceneDelegateClassName: "CarPlaySceneDelegate"
         NSLocationWhenInUseUsageDescription: "AutoLog gebruikt je locatie om automatisch ritten vast te leggen."
         NSLocationAlwaysAndWhenInUseUsageDescription: "AutoLog heeft continu locatietoegang nodig om ritten automatisch te registreren wanneer CarPlay of Bluetooth verbindt."
         NSBluetoothAlwaysUsageDescription: "AutoLog gebruikt Bluetooth om te detecteren wanneer je in je werk- of privéauto stapt."

@@ -1,7 +1,9 @@
 import Foundation
+import UIKit
 import CarPlay
 import Combine
 
+@objc(CarPlaySceneDelegate)
 public final class CarPlaySceneDelegate: UIResponder, CPTemplateApplicationSceneDelegate {
     public var interfaceController: CPInterfaceController?
     private var cancellables = Set<AnyCancellable>()
@@ -46,10 +48,7 @@ public final class CarPlaySceneDelegate: UIResponder, CPTemplateApplicationScene
         let engine = TripDetectionEngine.shared
         let storage = StorageManager.shared
 
-        // Tab 1: Live Status & Quick Action Template
         let statusTemplate = createStatusTemplate(engine: engine, storage: storage)
-
-        // Tab 2: Recent Trips List Template
         let recentTripsTemplate = createRecentTripsTemplate(storage: storage)
 
         let tabBar = CPTabBarTemplate(templates: [statusTemplate, recentTripsTemplate])
@@ -74,7 +73,6 @@ public final class CarPlaySceneDelegate: UIResponder, CPTemplateApplicationScene
                 CPInformationItem(title: "Vertrekpunt", detail: startAddr)
             ]
 
-            // Action 1: Switch between Zakelijk and Privé
             let isCurrentlyBiz = engine.activeTripType == .workBusiness
             let switchTitle = isCurrentlyBiz ? "Wissel naar Privé ➔" : "Wissel naar Zakelijk ➔"
 
@@ -83,7 +81,6 @@ public final class CarPlaySceneDelegate: UIResponder, CPTemplateApplicationScene
                 self?.updateCarPlayInterface()
             }
 
-            // Action 2: Stop Trip
             let stopButton = CPTextButton(title: "Beëindig Rit ⏹", textStyle: .cancel) { [weak self] _ in
                 engine.stopTrip()
                 self?.updateCarPlayInterface()
@@ -95,7 +92,6 @@ public final class CarPlaySceneDelegate: UIResponder, CPTemplateApplicationScene
             let vehicleName = activeVeh?.name ?? "Geen auto"
             let plate = activeVeh?.licensePlate ?? "-"
 
-            // Calculate current month stats
             let calendar = Calendar.current
             let curMonth = calendar.component(.month, from: Date())
             let curYear = calendar.component(.year, from: Date())

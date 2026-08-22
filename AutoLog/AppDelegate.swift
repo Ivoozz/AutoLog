@@ -1,6 +1,7 @@
 import UIKit
 import CarPlay
 
+@objc(AppDelegate)
 public class AppDelegate: NSObject, UIApplicationDelegate {
     public func application(
         _ application: UIApplication,
@@ -14,7 +15,9 @@ public class AppDelegate: NSObject, UIApplicationDelegate {
         configurationForConnecting connectingSceneSession: UISceneSession,
         options: UIScene.ConnectionOptions
     ) -> UISceneConfiguration {
-        if connectingSceneSession.role.rawValue == "CPTemplateApplicationSceneSessionRoleApplication" {
+        let role = connectingSceneSession.role.rawValue
+
+        if role == "CPTemplateApplicationSceneSessionRoleApplication" || role.contains("CPTemplateApplicationScene") {
             let sceneConfig = UISceneConfiguration(name: "CarPlay", sessionRole: connectingSceneSession.role)
             sceneConfig.delegateClass = CarPlaySceneDelegate.self
             return sceneConfig
