@@ -213,17 +213,16 @@ public final class TripDetectionEngine: ObservableObject {
                 vehicleLicensePlate: vehicle.licensePlate,
                 startTime: startTime,
                 endTime: endTime,
+                startAddress: startAddr,
+                endAddress: endResult.displayAddress,
+                startCoordinate: startPoint,
+                endCoordinate: endPoint,
+                distanceInKm: finalDistance,
                 startOdometer: startOdo,
                 endOdometer: endOdo,
                 tripType: finalTripType,
-                startAddress: startAddr,
-                endAddress: endResult.displayAddress,
-                startLatitude: startPoint.latitude,
-                startLongitude: startPoint.longitude,
-                endLatitude: endPoint.latitude,
-                endLongitude: endPoint.longitude,
-                routePoints: recordedPoints,
-                purposeDescription: purpose
+                purposeDescription: purpose,
+                routePoints: recordedPoints
             )
 
             DispatchQueue.main.async {
