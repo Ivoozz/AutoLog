@@ -18,7 +18,7 @@
       "localizedDescription": "AutoLog registreert automatisch al je autoritten zodra CarPlay of Bluetooth verbindt. Voorzien van Live Activities & Dynamic Island rittenvolger, Apple Liquid Glass UI, live Bluetooth-scanner, 500 km bijtellingsbewaker, Woon/Werk herkenning en Gmail PDF export.",
       "iconURL": "https://raw.githubusercontent.com/Ivoozz/AutoLog/main/icon.png",
       "tintColor": "007AFF",
-      "size": 395000,
+      "size": 435437,
       "screenshotURLs": [],
       "versions": [
         {
@@ -26,7 +26,7 @@
           "date": "2026-08-24",
           "localizedDescription": "Live Activities & Dynamic Island rittenmonitor, officieel Apple Liquid Glass design & SF Pro Typography, 1-tik zakelijk/privé schakelen.",
           "downloadURL": "https://github.com/Ivoozz/AutoLog/releases/download/v1.8.0/AutoLog-v1.8.0.ipa",
-          "size": 395000
+          "size": 435437
         }
       ]
     }
