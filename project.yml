@@ -22,12 +22,16 @@ targets:
     platform: iOS
     sources:
       - path: AutoLog
+    dependencies:
+      - target: AutoLogWidgets
     info:
       path: AutoLog/Info.plist
       properties:
         CFBundleDisplayName: "AutoLog"
-        CFBundleShortVersionString: "1.7.0"
-        CFBundleVersion: "10"
+        CFBundleShortVersionString: "1.8.0"
+        CFBundleVersion: "11"
+        NSSupportsLiveActivities: true
+        NSSupportsLiveActivitiesFrequentUpdates: true
         UILaunchScreen: {}
         UIRequiredDeviceCapabilities:
           - arm64
@@ -51,3 +55,32 @@ targets:
         NSBluetoothAlwaysUsageDescription: "AutoLog gebruikt Bluetooth om te detecteren wanneer je in je werk- of privéauto stapt."
         NSBluetoothPeripheralUsageDescription: "AutoLog gebruikt Bluetooth om verbinding met je voertuig te herkennen."
         NSMotionUsageDescription: "AutoLog gebruikt bewegingssensoren om autoritten nauwkeurig te registreren."
+
+  AutoLogWidgets:
+    type: app-extension
+    platform: iOS
+    sources:
+      - path: AutoLogWidgets
+      - path: AutoLog/Models/AutoLogActivityAttributes.swift
+    info:
+      path: AutoLogWidgets/Info.plist
+      properties:
+        CFBundleDisplayName: "AutoLog Widgets"
+        CFBundleShortVersionString: "1.8.0"
+        CFBundleVersion: "11"
+        NSSupportsLiveActivities: true
+    settings:
+      base:
+        PRODUCT_BUNDLE_IDENTIFIER: nl.ivoozz.AutoLog.widgets
+        GENERATE_INFOPLIST_FILE: NO
+        INFOPLIST_FILE: AutoLogWidgets/Info.plist
+        SWIFT_VERSION: "5.9"
+        IPHONEOS_DEPLOYMENT_TARGET: "17.0"
+        TARGETED_DEVICE_FAMILY: "1"
+        CODE_SIGNING_ALLOWED: NO
+        CODE_SIGNING_REQUIRED: NO
+        CODE_SIGN_IDENTITY: ""
+    dependencies:
+      - framework: WidgetKit.framework
+      - framework: ActivityKit.framework
+      - framework: SwiftUI.framework

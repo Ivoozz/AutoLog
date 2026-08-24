@@ -11,22 +11,22 @@
       "bundleIdentifier": "nl.ivoozz.AutoLog",
       "developerName": "Ivo",
       "subtitle": "Slimme Rittenregistratie",
-      "version": "1.7.0",
-      "versionDate": "2026-08-23",
-      "versionDescription": "Volledige CarPlay AppIcon assets (120x120/180x180), CPTemplateApplicationScene class mapping, live Bluetooth apparaatscanner en Liquid Glass menubalk.",
-      "downloadURL": "https://github.com/Ivoozz/AutoLog/releases/download/v1.7.0/AutoLog-v1.7.0.ipa",
-      "localizedDescription": "AutoLog registreert automatisch al je autoritten zodra CarPlay of Bluetooth verbindt. Voorzien van native Apple CarPlay dashboard-icoon en interface, live Bluetooth-scanner, Liquid Glass design, 500 km bijtellingsbewaker, Woon/Werk herkenning en Gmail PDF export.",
+      "version": "1.8.0",
+      "versionDate": "2026-08-24",
+      "versionDescription": "Live Activities & Dynamic Island rittenmonitor, officieel Apple Liquid Glass design & SF Pro Typography, 1-tik zakelijk/privé schakelen.",
+      "downloadURL": "https://github.com/Ivoozz/AutoLog/releases/download/v1.8.0/AutoLog-v1.8.0.ipa",
+      "localizedDescription": "AutoLog registreert automatisch al je autoritten zodra CarPlay of Bluetooth verbindt. Voorzien van Live Activities & Dynamic Island rittenvolger, Apple Liquid Glass UI, live Bluetooth-scanner, 500 km bijtellingsbewaker, Woon/Werk herkenning en Gmail PDF export.",
       "iconURL": "https://raw.githubusercontent.com/Ivoozz/AutoLog/main/icon.png",
       "tintColor": "007AFF",
-      "size": 391480,
+      "size": 395000,
       "screenshotURLs": [],
       "versions": [
         {
-          "version": "1.7.0",
-          "date": "2026-08-23",
-          "localizedDescription": "Volledige CarPlay AppIcon assets (120x120/180x180), CPTemplateApplicationScene class mapping, live Bluetooth apparaatscanner en Liquid Glass menubalk.",
-          "downloadURL": "https://github.com/Ivoozz/AutoLog/releases/download/v1.7.0/AutoLog-v1.7.0.ipa",
-          "size": 391480
+          "version": "1.8.0",
+          "date": "2026-08-24",
+          "localizedDescription": "Live Activities & Dynamic Island rittenmonitor, officieel Apple Liquid Glass design & SF Pro Typography, 1-tik zakelijk/privé schakelen.",
+          "downloadURL": "https://github.com/Ivoozz/AutoLog/releases/download/v1.8.0/AutoLog-v1.8.0.ipa",
+          "size": 395000
         }
       ]
     }

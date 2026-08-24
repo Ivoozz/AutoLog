@@ -1,6 +1,6 @@
 import Foundation
-import Combine
 import CoreLocation
+import Combine
 
 public final class TripDetectionEngine: ObservableObject {
     public static let shared = TripDetectionEngine()
@@ -9,17 +9,18 @@ public final class TripDetectionEngine: ObservableObject {
     @Published public var activeVehicle: Vehicle?
     @Published public var activeTripType: TripType = .workBusiness
     @Published public var activeStartTime: Date?
-    @Published public var activeStartAddress: String = "Locatie bepalen..."
     @Published public var activeDistanceKm: Double = 0.0
+    @Published public var activeStartAddress: String = "Locatie bepalen..."
+    @Published public var startCoordinate: CoordinatePoint?
 
+    private var matchedStartLocation: SavedLocation?
     private var cancellables = Set<AnyCancellable>()
+
     private let storage = StorageManager.shared
     private let locationManager = LocationManager.shared
     private let bluetoothManager = BluetoothManager.shared
     private let geocoding = GeocodingService.shared
-
-    private var startCoordinate: CoordinatePoint?
-    private var matchedStartLocation: SavedLocation?
+    private let liveActivity = LiveActivityManager.shared
 
     private init() {
         bindLocationUpdates()
@@ -32,6 +33,7 @@ public final class TripDetectionEngine: ObservableObject {
             .sink { [weak self] distance in
                 guard let self = self, self.isTripActive else { return }
                 self.activeDistanceKm = distance
+                self.syncLiveActivity()
             }
             .store(in: &cancellables)
 
@@ -63,6 +65,7 @@ public final class TripDetectionEngine: ObservableObject {
             DispatchQueue.main.async {
                 self.activeStartAddress = result.displayAddress
                 self.matchedStartLocation = result.matchedLocation
+                self.syncLiveActivity()
             }
         }
     }
@@ -95,11 +98,12 @@ public final class TripDetectionEngine: ObservableObject {
     public func startTrip(with vehicle: Vehicle, tripType: TripType? = nil) {
         guard !isTripActive else { return }
 
+        let sTime = Date()
         self.activeVehicle = vehicle
         self.activeTripType = tripType ?? vehicle.defaultTripType
-        self.activeStartTime = Date()
+        self.activeStartTime = sTime
         self.activeDistanceKm = 0.0
-        self.activeStartAddress = "Locatie ophalen..."
+        self.activeStartAddress = "Locatie bepalen..."
         self.startCoordinate = nil
         self.matchedStartLocation = nil
         self.isTripActive = true
@@ -110,26 +114,48 @@ public final class TripDetectionEngine: ObservableObject {
             let startPoint = CoordinatePoint(
                 latitude: loc.coordinate.latitude,
                 longitude: loc.coordinate.longitude,
-                timestamp: Date(),
+                timestamp: sTime,
                 speed: 0
             )
             self.startCoordinate = startPoint
             resolveStartAddress(point: startPoint)
         }
+
+        liveActivity.startLiveActivity(
+            vehicleName: vehicle.name,
+            licensePlate: vehicle.licensePlate,
+            startAddress: self.activeStartAddress,
+            tripType: self.activeTripType,
+            startTime: sTime
+        )
     }
 
     public func setTripType(_ type: TripType) {
         self.activeTripType = type
+        syncLiveActivity()
     }
 
     public func toggleTripType() {
         guard let vehicle = activeVehicle else { return }
         if vehicle.isWorkVehicle {
-            // Toggle between Zakelijk and Privé on work vehicle
             activeTripType = (activeTripType == .workBusiness) ? .workPrivate : .workBusiness
         } else {
             activeTripType = .privatePrivate
         }
+        syncLiveActivity()
+    }
+
+    private func syncLiveActivity() {
+        guard isTripActive, let vehicle = activeVehicle, let startTime = activeStartTime else { return }
+        liveActivity.updateLiveActivity(
+            distanceKm: activeDistanceKm,
+            currentSpeedKmH: locationManager.currentSpeedKmH,
+            tripType: activeTripType,
+            startAddress: activeStartAddress,
+            vehicleName: vehicle.name,
+            licensePlate: vehicle.licensePlate,
+            startTime: startTime
+        )
     }
 
     public func stopTrip() {
@@ -138,63 +164,47 @@ public final class TripDetectionEngine: ObservableObject {
         }
 
         let recordedPoints = locationManager.stopTripTracking()
-        let distanceKm = locationManager.currentTripDistanceKm
+        let finalDistance = activeDistanceKm
         let endTime = Date()
+        let startPoint = startCoordinate ?? recordedPoints.first ?? CoordinatePoint(latitude: 0, longitude: 0, timestamp: startTime, speed: 0)
+        let endPoint = recordedPoints.last ?? startPoint
 
         isTripActive = false
-
-        // Check if minimum distance was met
-        let minDistanceKm = storage.settings.minimumTripDistanceMeters / 1000.0
-        guard distanceKm >= minDistanceKm else {
-            print("Rit te kort (\(distanceKm) km < \(minDistanceKm) km), genegeerd.")
-            return
-        }
+        liveActivity.endLiveActivity()
 
         let startOdo = vehicle.currentOdometer
-        let endOdo = startOdo + distanceKm
+        let endOdo = startOdo + finalDistance
 
-        // Update vehicle odometer
         var updatedVehicle = vehicle
         updatedVehicle.currentOdometer = endOdo
         storage.addOrUpdateVehicle(updatedVehicle)
 
-        let startCoord = self.startCoordinate ?? recordedPoints.first
-        let endCoord = recordedPoints.last ?? startCoord
-
-        let currentStartAddr = self.activeStartAddress
+        let startAddr = activeStartAddress
+        let initialTripType = activeTripType
+        let startLocationMatch = matchedStartLocation
 
         Task {
-            var finalStartAddr = currentStartAddr
-            var finalStartLoc = self.matchedStartLocation
+            let endResult = await geocoding.resolveAddress(
+                latitude: endPoint.latitude,
+                longitude: endPoint.longitude,
+                savedLocations: storage.savedLocations
+            )
 
-            if (finalStartAddr.contains("Locatie") || finalStartAddr.contains("Onbekend")), let sc = startCoord {
-                let sRes = await self.geocoding.resolveAddress(
-                    latitude: sc.latitude,
-                    longitude: sc.longitude,
-                    savedLocations: self.storage.savedLocations
-                )
-                finalStartAddr = sRes.displayAddress
-                finalStartLoc = sRes.matchedLocation
-            }
+            var finalTripType = initialTripType
+            var purpose = ""
 
-            var finalEndAddr = "Onbekende bestemming"
-            var finalEndLoc: SavedLocation? = nil
-            if let ec = endCoord {
-                let eRes = await self.geocoding.resolveAddress(
-                    latitude: ec.latitude,
-                    longitude: ec.longitude,
-                    savedLocations: self.storage.savedLocations
-                )
-                finalEndAddr = eRes.displayAddress
-                finalEndLoc = eRes.matchedLocation
-            }
-
-            // Auto-detect Woon-werkverkeer
-            var autoPurpose = self.activeTripType == .workBusiness ? "Zakelijke rit" : "Privé rit"
-            if let sl = finalStartLoc, let el = finalEndLoc {
-                if (sl.category == .home && el.category == .work) || (sl.category == .work && el.category == .home) {
-                    autoPurpose = "Woon-werkverkeer"
+            if let startLoc = startLocationMatch, let endLoc = endResult.matchedLocation {
+                if (startLoc.category == .home && endLoc.category == .work) ||
+                   (startLoc.category == .work && endLoc.category == .home) {
+                    purpose = "Woon-werkverkeer"
+                    if vehicle.isWorkVehicle {
+                        finalTripType = .workBusiness
+                    }
                 }
+            }
+
+            if purpose.isEmpty {
+                purpose = finalTripType == .workBusiness ? "Zakelijk bezoek" : "Privé rit"
             }
 
             let newTrip = Trip(
@@ -203,22 +213,32 @@ public final class TripDetectionEngine: ObservableObject {
                 vehicleLicensePlate: vehicle.licensePlate,
                 startTime: startTime,
                 endTime: endTime,
-                startAddress: finalStartAddr,
-                endAddress: finalEndAddr,
-                startCoordinate: startCoord,
-                endCoordinate: endCoord,
-                distanceInKm: distanceKm,
                 startOdometer: startOdo,
                 endOdometer: endOdo,
-                tripType: self.activeTripType,
-                purposeDescription: autoPurpose,
+                tripType: finalTripType,
+                startAddress: startAddr,
+                endAddress: endResult.displayAddress,
+                startLatitude: startPoint.latitude,
+                startLongitude: startPoint.longitude,
+                endLatitude: endPoint.latitude,
+                endLongitude: endPoint.longitude,
                 routePoints: recordedPoints,
-                isExported: false
+                purposeDescription: purpose
             )
 
             DispatchQueue.main.async {
                 self.storage.addTrip(newTrip)
+                self.resetActiveState()
             }
         }
+    }
+
+    private func resetActiveState() {
+        self.activeVehicle = nil
+        self.activeStartTime = nil
+        self.activeDistanceKm = 0.0
+        self.activeStartAddress = "Locatie bepalen..."
+        self.startCoordinate = nil
+        self.matchedStartLocation = nil
     }
 }
