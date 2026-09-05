@@ -1,34 +1,46 @@
 {
-  "name": "AutoLog Community Source",
+  "name": "AutoLog Source",
   "identifier": "nl.ivoozz.autolog.source",
   "subtitle": "Slimme iOS & CarPlay Rittenregistratie",
-  "description": "Automatische rittenregistratie voor CarPlay & iPhone met zakelijk/privé scheiding, Woon/Werk herkenning en Belastingdienst PDF rapportage.",
+  "description": "Automatische rittenregistratie voor iPhone & CarPlay met Live Activities, Dynamic Island, Woon/Werk herkenning en Belastingdienst PDF rapportage.",
   "iconURL": "https://raw.githubusercontent.com/Ivoozz/AutoLog/main/icon.png",
+  "headerURL": "https://raw.githubusercontent.com/Ivoozz/AutoLog/main/icon.png",
   "website": "https://github.com/Ivoozz/AutoLog",
+  "tintColor": "#007AFF",
+  "featuredApps": [
+    "nl.ivoozz.AutoLog"
+  ],
   "apps": [
     {
       "name": "AutoLog",
       "bundleIdentifier": "nl.ivoozz.AutoLog",
       "developerName": "Ivo",
       "subtitle": "Slimme Rittenregistratie",
-      "version": "1.8.0",
-      "versionDate": "2026-08-24",
-      "versionDescription": "Live Activities & Dynamic Island rittenmonitor, officieel Apple Liquid Glass design & SF Pro Typography, 1-tik zakelijk/privé schakelen.",
-      "downloadURL": "https://github.com/Ivoozz/AutoLog/releases/download/v1.8.0/AutoLog-v1.8.0.ipa",
       "localizedDescription": "AutoLog registreert automatisch al je autoritten zodra CarPlay of Bluetooth verbindt. Voorzien van Live Activities & Dynamic Island rittenvolger, Apple Liquid Glass UI, live Bluetooth-scanner, 500 km bijtellingsbewaker, Woon/Werk herkenning en Gmail PDF export.",
       "iconURL": "https://raw.githubusercontent.com/Ivoozz/AutoLog/main/icon.png",
-      "tintColor": "007AFF",
+      "tintColor": "#007AFF",
       "size": 435437,
-      "screenshotURLs": [],
+      "screenshots": [],
       "versions": [
         {
           "version": "1.8.0",
-          "date": "2026-08-24",
+          "buildVersion": "11",
+          "date": "2026-08-24T11:35:00Z",
           "localizedDescription": "Live Activities & Dynamic Island rittenmonitor, officieel Apple Liquid Glass design & SF Pro Typography, 1-tik zakelijk/privé schakelen.",
           "downloadURL": "https://github.com/Ivoozz/AutoLog/releases/download/v1.8.0/AutoLog-v1.8.0.ipa",
-          "size": 435437
+          "size": 435437,
+          "minOSVersion": "17.0"
         }
-      ]
+      ],
+      "appPermissions": {
+        "entitlements": [],
+        "privacy": {
+          "NSLocationWhenInUseUsageDescription": "AutoLog registreert je gereden route tijdens actieve ritten.",
+          "NSLocationAlwaysAndWhenInUseUsageDescription": "AutoLog heeft continu locatietoegang nodig om ritten automatisch te starten en bij te houden wanneer CarPlay of Bluetooth verbindt.",
+          "NSBluetoothAlwaysUsageDescription": "AutoLog gebruikt Bluetooth om te detecteren wanneer je in je werk- of privéauto stapt.",
+          "NSMotionUsageDescription": "AutoLog gebruikt bewegingssensoren om efficiënt te detecteren wanneer je auto rijdt en batterij te besparen."
+        }
+      }
     }
   ],
   "news": []

@@ -1,0 +1,6 @@
+build/
+build_*/
+AutoLog-iOS-App/
+*.ipa
+*.zip
+.DS_Store
